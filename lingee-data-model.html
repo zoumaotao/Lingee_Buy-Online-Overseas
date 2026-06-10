@@ -162,10 +162,6 @@ erDiagram
     string queue
     string priority
     string status }
-  SUPPORT_MESSAGE { uuid id PK
-    uuid ticket_id FK
-    string sender_type
-    text body }
   MESSAGE_LOG { uuid id PK
     string direction
     string channel
@@ -180,7 +176,7 @@ erDiagram
     string linked_by }
     </div>
     <div class="note"><b>实体中英对照(图中框名 = 英文,供与开发/字段表对齐;关系连线已用中文):</b><br>
-      PRODUCT 产品 · SKU 可售变体 · ACCOUNT 客户(企业)· CONTACT 联系人 · LEAD 线索 · OPPORTUNITY 商机 · ORDER 订单 · ORDER_ITEM 订单行 · PAYMENT 支付(=Stripe PaymentIntent)· REFUND 退款 · DISPUTE 拒付 · ORDER_EVENT 订单状态历史 · SUBSCRIPTION 订阅 · TENANT 租户 · SEAT 席位 · POINT_LEDGER 点数账本 · INVOICE 发票 · EINVOICE_SUBMISSION MyInvois上报 · CONSENT_LOG 同意存证 · COMPLIANCE_CHECK 合规筛查 · WEBHOOK_EVENT Stripe事件 · NOTIFICATION 通知记录 · SUPPORT_REQUEST 支持工单(售后)· SUPPORT_MESSAGE 工单消息 · MESSAGE_LOG 收发消息总账 · MESSAGE_LINK 消息关联(多态)· APPROVAL 审批记录 · AUDIT_LOG 操作审计。
+      PRODUCT 产品 · SKU 可售变体 · ACCOUNT 客户(企业)· CONTACT 联系人 · LEAD 线索 · OPPORTUNITY 商机 · ORDER 订单 · ORDER_ITEM 订单行 · PAYMENT 支付(=Stripe PaymentIntent)· REFUND 退款 · DISPUTE 拒付 · ORDER_EVENT 订单状态历史 · SUBSCRIPTION 订阅 · TENANT 租户 · SEAT 席位 · POINT_LEDGER 点数账本 · INVOICE 发票 · EINVOICE_SUBMISSION MyInvois上报 · CONSENT_LOG 同意存证 · COMPLIANCE_CHECK 合规筛查 · WEBHOOK_EVENT Stripe事件 · NOTIFICATION 通知记录 · SUPPORT_REQUEST 支持工单(售后)· MESSAGE_LOG 收发消息总账 · MESSAGE_LINK 消息关联(多态)· APPROVAL 审批记录 · AUDIT_LOG 操作审计。<br><span style="color:var(--muted)">(工单对话 SUPPORT_MESSAGE 不是独立实体,是 MESSAGE_LOG 经 MESSAGE_LINK 关联到工单的派生视图。)</span>
       <br><span style="color:var(--muted)">本图给产品看"实体间关系"(谁和谁、一对多);物理表名/字段类型/索引由开发设计。下面各域是字段级定义。</span></div>
   </div>
 
@@ -594,9 +590,9 @@ erDiagram
       <tr><td>assignee</td><td><code>string</code></td><td></td><td>处理人(客服)</td></tr>
       <tr><td>created_at / updated_at / resolved_at</td><td><code>timestamp</code></td><td class="req">*</td><td>创建 / 最近更新 / 解决时间(UTC,展示 GMT+8)</td></tr>
     </table>
-    <div class="tdesc" style="margin-top:6px"><b>对话内容拆为子表 SUPPORT_MESSAGE</b>(一张工单多条往来),不在主表塞单条 message。</div>
+    <div class="tdesc" style="margin-top:6px"><b>工单对话 = MESSAGE_LOG 的派生视图,不独立存储</b>:下表「SUPPORT_MESSAGE 字段」是<b>展示工单往来时的逻辑结构</b>,实际正文与附件存在 <code>MESSAGE_LOG</code>,经 <code>MESSAGE_LINK</code>(entity_type=support_request)关联到本工单(见本域末「与既有实体的关系」)。这里列字段只为说明工单详情页要展示哪些信息,<b>不是一张独立物理表</b>。</div>
     <table>
-      <tr><th>SUPPORT_MESSAGE 字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><th>工单消息(派生自 MESSAGE_LOG)字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
       <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> ticket_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属工单</td></tr>
       <tr><td>sender_type / sender</td><td><code>enum / string</code></td><td class="req">*</td><td><span class="enum">customer</span> / <span class="enum">agent</span>(客服)+ 发送人标识</td></tr>
       <tr><td>body</td><td><code>text</code></td><td class="req">*</td><td>消息正文</td></tr>

@@ -39,7 +39,7 @@ code{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-fam
   <p class="lead">交接 &amp; QA 走查专用。原型 <code>lingee-overseas.html</code> 里所有"看起来是写死的值",在这里登记它们<b>上线时的真实来源</b>。研发逐项接,QA 逐项核。</p>
 
   <div class="callout">
-    <b>⚠️ 为什么有这张表:</b>原型为了能演示,把价格、税率、文案等写成了硬编码常量。历史教训是——交接后研发容易直接照抄常量、没接后台,导致数据改了前端不变,只能靠大量人工走查发现。<b>本表把每个动态值的来源固定下来,任何带"配置/Stripe/计算"标签的值都不得在生产代码里写死。</b>
+    <b>⚠️ 为什么有这张表:</b>原型为了能演示,把价格、税率、文案等写成了硬编码常量。<b>本表把每个动态值的来源固定下来,任何带"配置/Stripe/计算"标签的值都不得在生产代码里写死。</b>
   </div>
 
   <div class="legend">

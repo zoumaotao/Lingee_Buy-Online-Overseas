@@ -216,7 +216,7 @@ code{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-fam
           <li><b>金蝶 ERP(财务大后端):</b>收款记账、MFRS15 收入确认、财报、<b>期末三方对账</b></li>
           <li><span class="tag t-ext">外部</span> LHDN MyInvois、制裁名单、协议/DPA 版本库</li>
         </ul>
-        <p class="note">支付成功 ≠ 立即开通:Webhook → <b>履约对账(流水↔订单匹配)+ 风控/合规闸</b>(Radar+制裁+受限国家)→ 都通过才调 KDM 开通。<b>履约对账在后台、秒级、不等 ERP;财务记账/对账在金蝶 ERP、开通后异步、不阻断。</b>详见 <a href="lingee-architecture.html" style="color:var(--pri)">架构与时序</a>。</p>
+        <p class="note">支付成功 ≠ 立即开通:Webhook → <b>履约对账(流水↔订单匹配)+ 风控/合规闸</b>(Radar+制裁+受限国家)<b> + TID/SN 对齐闸</b>(问 KBC 判增购/新购,防开两个租户)→ 都通过才调 KDM 开通。<b>履约对账在后台、秒级、不等 ERP;财务记账/对账在金蝶 ERP、开通后异步、不阻断。</b>详见 <a href="lingee-architecture.html" style="color:var(--pri)">架构与时序</a>。</p>
       </div>
     </section>
 

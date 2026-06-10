@@ -257,47 +257,47 @@ sequenceDiagram
   actor C as 客户
   participant FE as 购买前端
   participant API as Lingee BC
-  actor OPS as 客服/运营
+  actor OPS as 客服运营
   participant S as Stripe
   participant LH as LHDN MyInvois
   participant PV as 灵基KDM
   participant T as Lingee 租户
   participant ERP as 金蝶 ERP
 
-  alt 系统自动(合规拒绝 / 开通失败)
-    API->>API: 自建 REFUND(reason 系统填, source=system)
+  alt 系统自动,合规拒绝 或 开通失败
+    API->>API: 自建 REFUND,reason 系统填,source=system
     Note over API: 我方责任,免审批,直接退
   else 客服后台发起
-    OPS->>API: 在退款页/订单详情发起退款(选 reason)
+    OPS->>API: 在退款页或订单详情发起退款,选 reason
   else 客户工单申请
-    C->>FE: Contact support 提交(topic=refund)
+    C->>FE: Contact support 提交,topic=refund
     FE->>API: 建 SUPPORT_REQUEST
-    OPS->>API: 核实后转 REFUND(source=customer_request)
+    OPS->>API: 核实后转 REFUND,source=customer_request
   end
 
   opt 开通后退款
-    OPS->>API: 人工审批(第二人)+ 填审批意见,写 AUDIT_LOG
+    OPS->>API: 人工审批第二人,填审批意见,写 AUDIT_LOG
   end
 
-  API->>S: POST v1 refunds(payment_intent + amount,原路退回)
+  API->>S: POST v1 refunds,传 payment_intent 与 amount,原路退回
   S-->>API: REFUND.status=pending
-  Note over S,C: Stripe 原路退回原卡 5–10 个工作日
+  Note over S,C: Stripe 原路退回原卡 5 到 10 个工作日
 
   rect rgb(236,253,243)
-    Note over API,T: 退款成功后:环境回收(KDM 编排)
+    Note over API,T: 退款成功后:环境回收 KDM 编排
     S-->>API: Webhook charge.refunded,REFUND.status=succeeded
     API->>API: ORDER 置 refunded,SUBSCRIPTION 置 canceled,写 ORDER_EVENT
     API->>PV: 触发回收
-    PV->>T: 租户 suspended,保留期默认30天只读供导出,到期 terminated 删/匿名化
+    PV->>T: 租户 suspended,保留期默认30天只读供导出,到期 terminated 删或匿名化
     PV->>T: SEAT 置 revoked,增购点数 POINT_LEDGER 写 revoke 清零
-    API->>S: 退订 stripe_sub_id(防再扣费)
+    API->>S: 退订 stripe_sub_id,防再扣费
   end
 
-  API->>S: 开 credit note(冲原 stripe_invoice)
-  API->>LH: 上报 MyInvois 红冲(doc_type=credit_note),取红冲凭证
-  API->>ERP: 异步推冲减事件,收入冲减(MFRS15)
-  API->>C: 发 refund_confirmation 通知(含数据将于 N 天后删除)
-  Note over API,C: 钱由 Stripe 退;业务确认邮件由 Lingee 发
+  API->>S: 开 credit note,冲原 stripe_invoice
+  API->>LH: 上报 MyInvois 红冲,doc_type=credit_note,取红冲凭证
+  API->>ERP: 异步推冲减事件,收入冲减 MFRS15
+  API->>C: 发 refund_confirmation 通知,含数据将于 N 天后删除
+  Note over API,C: 钱由 Stripe 退,业务确认邮件由 Lingee 发
     </div>
     <div class="note">
       <b>读图要点:</b>① <b>三发起源</b>(系统自动 / 客服发起 / 客户工单)汇到同一条 REFUND;客户只能"申请"不能自己退;② <b>合规拒绝/开通失败免审批</b>(我方责任),<b>开通后退款需第二人审批</b>并写 AUDIT_LOG;③ 退款一律<b>后端调 Stripe Refund API</b>,非后台手动点;④ <code>charge.refunded</code> 是退款<b>成功回执</b>,它触发<b>环境回收</b>;⑤ 钱由 Stripe 退、<b>业务确认邮件由 Lingee 发</b>;⑥ 财务侧发票红冲 + ERP 收入冲减<b>异步、不阻断</b>。
