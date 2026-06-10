@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee 购买页 · 动态字段 vs 数据源清单(交接/走查用)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#6C5CE7;--ink:#21242F;--muted:#6B7080;--line:#E7E8F0;--bg:#F4F3FB;--card:#fff;--red:#DC2626;--ok:#16A34A;--amber:#E8820C}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:30px 22px 70px}
+h1{font-size:24px;font-weight:800;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:13.5px;margin:8px 0 6px;max-width:900px}
+.callout{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px 16px;font-size:12.5px;color:#991B1B;line-height:1.7;margin:16px 0 22px}
+.callout b{font-weight:800}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:20px;box-shadow:0 4px 18px rgba(76,60,180,.05)}
+.card h2{font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .ic{width:24px;height:24px;border-radius:7px;background:#F0EEFC;color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #F1F2F8;vertical-align:top}
+th{background:#FAFAFE;font-weight:700;color:#475569;font-size:11.5px}
+tr:last-child td{border-bottom:none}
+code{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-family:'SF Mono',Menlo,monospace;font-size:11.5px}
+.src{font-weight:600;color:#0F766E}
+.warn{color:var(--red);font-weight:700}
+.tag{font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.t-stripe{background:#EEEDFF;color:#4338CA;border:1px solid #C7CBF5}
+.t-cfg{background:#FFF4E6;color:#9A3412;border:1px solid #FDBA74}
+.t-calc{background:#ECFDF3;color:#166534;border:1px solid #86EFAC}
+.t-user{background:#F1F5F9;color:#475569;border:1px solid #CBD5E1}
+.note{font-size:12px;color:var(--muted);background:#FAFAFE;border:1px dashed var(--line);border-radius:10px;padding:12px 15px;margin-top:14px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 20px;font-size:11.5px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>购买页 · 动态字段 vs 数据源清单</h1>
+  <p class="lead">交接 &amp; QA 走查专用。原型 <code>lingee-overseas.html</code> 里所有"看起来是写死的值",在这里登记它们<b>上线时的真实来源</b>。研发逐项接,QA 逐项核。</p>
+
+  <div class="callout">
+    <b>⚠️ 为什么有这张表:</b>原型为了能演示,把价格、税率、文案等写成了硬编码常量。历史教训是——交接后研发容易直接照抄常量、没接后台,导致数据改了前端不变,只能靠大量人工走查发现。<b>本表把每个动态值的来源固定下来,任何带"配置/Stripe/计算"标签的值都不得在生产代码里写死。</b>
+  </div>
+
+  <div class="legend">
+    <span><span class="tag t-stripe">Stripe</span> 来自 Stripe 对象/回传</span>
+    <span><span class="tag t-cfg">后台配置</span> 后台可维护</span>
+    <span><span class="tag t-calc">运行计算</span> 由其它值算出</span>
+    <span><span class="tag t-user">用户输入</span> 客户填写</span>
+  </div>
+
+  <!-- 价格 -->
+  <div class="card">
+    <h2><span class="ic">$</span>价格与产品</h2>
+    <table>
+      <tr><th>原型里的值</th><th>位置</th><th>来源</th><th>上线时从哪取</th></tr>
+      <tr><td><code>$180</code> /seat/year</td><td>套餐卡 / Step1 / 协议</td><td><span class="tag t-stripe">Stripe</span></td><td class="src">Stripe Price(年订阅).unit_amount</td></tr>
+      <tr><td><code>$15</code> /seat/month</td><td>套餐卡 / Step1</td><td><span class="tag t-stripe">Stripe</span></td><td class="src">Stripe Price(月订阅).unit_amount</td></tr>
+      <tr><td><code>$300</code> / 10,000 units(<code>$0.03</code>/unit)</td><td>Step1 点数包</td><td><span class="tag t-stripe">Stripe</span></td><td class="src">Stripe Price(点数包).unit_amount</td></tr>
+      <tr><td>最小席位 <code>5</code></td><td>Step1 输入 min</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">产品配置:Professional 最小席位</td></tr>
+      <tr><td>点数步长 <code>10,000</code></td><td>Step1 输入 step</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">产品配置:点数包最小单位</td></tr>
+      <tr><td>Premium 最小 <code>100</code> 席</td><td>套餐卡</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">产品配置:Premium 起售席位</td></tr>
+      <tr><td>赠送 <code>500</code> units/seat/月</td><td>套餐卡 / Step1 / 协议</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">产品权益配置(灵基 KDM)</td></tr>
+    </table>
+  </div>
+
+  <!-- 税 -->
+  <div class="card">
+    <h2><span class="ic">%</span>税务</h2>
+    <table>
+      <tr><th>原型里的值</th><th>位置</th><th>来源</th><th>上线时怎么处理</th></tr>
+      <tr><td>SST <code>8%</code> 标签</td><td>Step1/2/3 摘要</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">后台税率配置;仅用于"下单前预估展示"</td></tr>
+      <tr><td>税额金额(如 $144)</td><td>Step3 摘要</td><td><span class="tag t-stripe">Stripe</span></td><td class="warn">⚠️ 前端不要算!由 Stripe 嵌入收银台计算并显示;付款后 Webhook 回传 <code>amount_tax</code> 存入订单/发票</td></tr>
+      <tr><td>税率 ID <code>txr_1Tfc93...</code></td><td>创建 Session</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">后台配置 = Stripe Tax Rate ID</td></tr>
+      <tr><td>挂不挂税率的规则</td><td>创建 Session</td><td><span class="tag t-stripe">Stripe</span></td><td class="src">用 <code>dynamic_tax_rates:[txr_...]</code> + <code>customer_update.address:auto</code>;Stripe 按账单地址自动匹配(马来→SST、海外→零税率)。<b>前端不判断、无一致性校验、无退款逻辑</b></td></tr>
+    </table>
+    <div class="note">背景:Stripe Tax 不支持马来本地主体,故用<b>手动税率</b>。马来 SST 最终以 <b>MyInvois 发票</b>为准,口径请财税确认。</div>
+  </div>
+
+  <!-- 主体/法律 -->
+  <div class="card">
+    <h2><span class="ic">§</span>主体 / 法律 / 文案</h2>
+    <table>
+      <tr><th>原型里的值</th><th>位置</th><th>来源</th><th>上线时从哪取</th></tr>
+      <tr><td>KINGDEE ... (MALAYSIA) SDN. BHD.</td><td>多处披露/支付/协议</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">经营主体配置(全局常量级,但应集中维护)</td></tr>
+      <tr><td>订单有效期 <code>14 天</code></td><td>协议 / 支付说明</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">订单/计费配置</td></tr>
+      <tr><td>协议正文 + 版本号 v2.1</td><td>协议弹窗</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">协议版本库(法务定稿;同意存证绑定版本号)</td></tr>
+      <tr><td>适用法 / AIAC / 仲裁</td><td>协议</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">法务定稿文本</td></tr>
+      <tr><td>支持邮箱 lingeebc@kingdee.com</td><td>协议/须知</td><td><span class="tag t-cfg">后台配置</span></td><td class="src">站点配置</td></tr>
+    </table>
+  </div>
+
+  <!-- 计算/汇总 -->
+  <div class="card">
+    <h2><span class="ic">∑</span>汇总与计算值</h2>
+    <table>
+      <tr><th>原型里的值</th><th>位置</th><th>来源</th><th>说明</th></tr>
+      <tr><td>小计(seats×单价×周期)</td><td>Step1/2/3</td><td><span class="tag t-calc">运行计算</span></td><td>前端按所选配置预估展示;<b>最终金额以 Stripe 为准</b></td></tr>
+      <tr><td>赠送点数总额</td><td>Step1/2 摘要</td><td><span class="tag t-calc">运行计算</span></td><td>seats×500×月数,展示用</td></tr>
+      <tr><td>总计 / 应付</td><td>Step3</td><td><span class="tag t-stripe">Stripe</span></td><td class="warn">⚠️ 收银台显示的总计以 Stripe 计算为准,非前端</td></tr>
+      <tr><td>订单号 LG-OS-...</td><td>Step4 / 各场景</td><td><span class="tag t-calc">运行计算</span></td><td>后端订单服务生成,非前端拼</td></tr>
+      <tr><td>租户访问地址(app/test.lingeeglobal.ai)</td><td>Step4</td><td><span class="tag t-cfg">后台配置</span></td><td>固定应用入口,由开通编排器(灵基 KDM)/后台配置返回,<b>非前端拼、非按公司名生成子域名</b></td></tr>
+    </table>
+  </div>
+
+  <!-- 客户输入(这些是对的,留作对照) -->
+  <div class="card">
+    <h2><span class="ic">✎</span>客户输入(由用户填,非硬编码)</h2>
+    <table>
+      <tr><th>字段</th><th>位置</th><th>来源</th><th>用途</th></tr>
+      <tr><td>Contact name / Work email</td><td>Step2</td><td><span class="tag t-user">用户输入</span></td><td>同意主体 + 通知收件</td></tr>
+      <tr><td>Country / Company name</td><td>Step2</td><td><span class="tag t-user">用户输入</span></td><td>税务判定 + 开票抬头</td></tr>
+      <tr><td>Reg no. / Tax ID(马来必填)</td><td>Step2</td><td><span class="tag t-user">用户输入</span></td><td>MyInvois 开票</td></tr>
+      <tr><td>账单地址 / 卡信息 / 税号</td><td>Step3</td><td><span class="tag t-stripe">Stripe 收</span></td><td class="src">由 Stripe 嵌入收银台收集,我方不经手卡号</td></tr>
+    </table>
+  </div>
+
+  <div class="note">交接动作:原型 JS 顶部已用 <code>DEMO_CFG</code> 集中这些占位值并标注来源;研发对照本表逐项接入真实数据源,QA 用本表逐项走查。任何"配置/Stripe"标签的值<b>不得写死</b>。</div>
+</div>
+</body>
+</html>

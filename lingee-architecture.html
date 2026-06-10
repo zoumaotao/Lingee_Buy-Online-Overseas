@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee 海外购买 · 端到端架构与时序</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --pri:#6C5CE7; --ink:#21242F; --muted:#6B7080; --line:#E7E8F0;
+  --bg:#F4F3FB; --card:#fff;
+  --stripe:#635BFF; --self:#16A34A; --ext:#E8820C; --erp:#0EA5E9;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+.wrap{max-width:1140px;margin:0 auto;padding:32px 24px 80px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:14px;margin:8px 0 22px;max-width:820px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px}
+.lg{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px}
+.dot{width:11px;height:11px;border-radius:3px}
+.d-stripe{background:var(--stripe)} .d-self{background:var(--self)} .d-ext{background:var(--ext)} .d-erp{background:var(--erp)} .d-user{background:#94A3B8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-bottom:24px;box-shadow:0 6px 22px rgba(76,60,180,.06)}
+.card h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.card h2 .tag{font-size:11px;font-weight:700;color:var(--pri);background:#F0EEFC;border-radius:6px;padding:2px 9px;margin-left:8px;vertical-align:middle}
+.card .sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.mermaid{width:100%;overflow-x:auto;text-align:center}
+.note{font-size:12px;color:var(--muted);background:#FAFAFE;border:1px dashed var(--line);border-radius:10px;padding:12px 15px;margin-top:16px}
+.note b{color:var(--ink)}
+.kbox{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:6px}
+.kcol{border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.kcol h3{font-size:13.5px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.kcol ul{list-style:none;font-size:12.5px;color:#475569;line-height:1.5}
+.kcol li{padding:5px 0;border-bottom:1px solid #F2F2F8;display:flex;gap:7px}
+.kcol li:last-child{border-bottom:none}
+.kcol li::before{content:'▸';color:var(--pri)}
+@media(max-width:820px){.kbox{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Lingee 海外购买 · 端到端架构与时序</h1>
+  <p class="lead">经营主体:KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD. · 公有云 SaaS · B2B 跨境销售 · Stripe 收款。下图区分<b>哪些由 Stripe 承担、哪些需你自建、哪些是外部合规系统</b>,覆盖法律/数据/税务/资金四类合规与自动开通。</p>
+
+  <div class="legend">
+    <span class="lg"><span class="dot d-user"></span>客户 / 前端</span>
+    <span class="lg"><span class="dot d-self"></span>你自建(后端)</span>
+    <span class="lg"><span class="dot d-stripe"></span>Stripe 平台</span>
+    <span class="lg"><span class="dot d-ext"></span>外部合规系统</span>
+    <span class="lg"><span class="dot d-erp"></span>灵基 KDM / 金蝶 ERP</span>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="card">
+    <h2>1 · 系统架构图 <span class="tag">组件与边界</span></h2>
+    <div class="sub">谁负责什么。绿色方块是你这次真正要额外设计建设的部分。</div>
+    <div class="mermaid">
+flowchart TB
+  subgraph U["🧑‍💼 客户侧"]
+    direction LR
+    BUY["购买前端<br/>(产品内弹窗 / 本页原型)"]:::user
+    ADMIN["客户管理后台<br/>席位·点数·发票·退款"]:::user
+  end
+
+  subgraph CORE["⚙️ Lingee BC (商业中心 / 商务交易层) · 你自建"]
+    direction TB
+    SALES["销售漏斗(Premium/大客户)<br/>LEAD 线索·评分 → OPPORTUNITY 商机·报价"]:::self
+    ORD["订单 & 报价服务<br/>订单状态机 / 赢单转订单"]:::self
+    SUB["订阅服务<br/>周期·续费·版本"]:::self
+    CMP["合规服务<br/>同意存证·制裁+出口管制筛查·税务判定"]:::self
+    WH["Webhook 处理器<br/>验签·幂等·重试"]:::self
+    MATCH["履约对账(操作层)<br/>流水↔订单匹配·金额一致"]:::self
+    RISK["风控/合规闸<br/>Radar评分·制裁+出口管制筛查·受限国家拦截·BIN/IP/地址交叉"]:::self
+    FINEVT["财务事件推送(开通后·异步)<br/>计费/履约事件 → ERP"]:::self
+    NOTIFY["通知服务<br/>邮件/站内信 → 落消息总账"]:::self
+  end
+
+  subgraph KDM["🟦 灵基 KDM (产品/履约层)"]
+    direction TB
+    PROV["开通编排器<br/>建生产+沙箱租户(隔离)"]:::erp
+    ENT["权益服务<br/>版本→功能 / @智能体权限"]:::erp
+    PT["点数账本 & 计量<br/>赠送派发·增购·用量·个人额度"]:::erp
+    TENANT["Lingee 租户<br/>生产 + 沙箱"]:::erp
+    CONN["私有 ERP 连接器<br/>星瀚/星空"]:::erp
+  end
+
+  subgraph STR["💳 Stripe"]
+    direction TB
+    CHK["Checkout / Elements"]:::stripe
+    BILL["Billing 订阅·续费·proration"]:::stripe
+    TAX["手动 Tax Rate + dynamic_tax_rates<br/>(Stripe Tax 不支持马来主体)"]:::stripe
+    INV["Invoicing 发票·催款·重试"]:::stripe
+  end
+
+  subgraph EXT["🏛️ 外部合规"]
+    direction TB
+    LHDN["LHDN MyInvois<br/>马来税局·强制电子发票"]:::ext
+    SANC["制裁/出口管制名单"]:::ext
+    LEGAL["协议/DPA 版本库<br/>(律师审定)"]:::ext
+  end
+
+  subgraph FIN["🟦 金蝶 ERP (财务大后端 / 管理后端)"]
+    direction TB
+    ERPFIN["收款记账 · 收入确认 MFRS15<br/>按服务期分摊 · 财报 · 期末三方对账"]:::erp
+  end
+
+  BUY -- "Professional 自助" --> ORD
+  BUY -. "Premium 询价/试用" .-> SALES
+  SALES -- "赢单付款→转订单" --> ORD
+  ADMIN --> SUB
+  ADMIN --> PT
+  ORD --> CMP
+  CMP --> SANC
+  CMP --> LEGAL
+  ORD --> CHK
+  CHK --> BILL
+  BILL --> TAX
+  BILL --> INV
+  BILL -. 事件 .-> WH
+  WH --> MATCH
+  MATCH --> RISK
+  WH --> SUB
+  RISK --> SANC
+  RISK -- 流水匹配 + 风控通过 --> PROV
+  RISK -. 高风险转人工 / 命中名单拒绝 .-> ADMIN
+  SUB --> ENT
+  PROV --> TENANT
+  PROV --> ENT
+  PROV --> PT
+  ENT --> TENANT
+  PT --> TENANT
+  PROV --> CONN
+  PROV -- 开通完成 --> FINEVT
+  WH --> NOTIFY
+  NOTIFY --> BUY
+  INV --> LHDN
+  FINEVT -- 计费/履约事件(异步) --> ERPFIN
+  ERPFIN -. 期末三方对账 .- INV
+
+  classDef user fill:#F1F5F9,stroke:#94A3B8,color:#21242F,stroke-width:1.5px;
+  classDef self fill:#ECFDF3,stroke:#16A34A,color:#14532D,stroke-width:1.5px;
+  classDef stripe fill:#EEEDFF,stroke:#635BFF,color:#312E81,stroke-width:1.5px;
+  classDef ext fill:#FFF4E6,stroke:#E8820C,color:#7C3A00,stroke-width:1.5px;
+  classDef erp fill:#E6F6FE,stroke:#0EA5E9,color:#075985,stroke-width:1.5px;
+    </div>
+    <div class="note">
+      <b>读图要点:</b><b>Lingee BC(绿,商业中心/商务层)</b>接 Stripe、管订单/订阅/合规。支付成功后<b>不直接开通</b>——Webhook 先做<b>履约对账(流水↔订单匹配、金额一致)</b>,再过<b>风控/合规闸</b>(Radar 评分 + 制裁&出口管制筛查 + 受限国家 + BIN/IP/地址交叉):<b>两者都通过才调用灵基 KDM 开通</b>,高风险转人工,命中名单/受限国家拒绝。<br><b>⚠️ 两种对账分层(关键):</b>① <b>履约对账</b>在 Lingee BC、在开通关键路径上、秒级、<b>绝不等 ERP</b>——这就是"流水确认在后台完成、直接触发 KDM";② <b>财务对账/记账</b>在<b>金蝶 ERP(财务大后端)</b>,开通后由 Lingee BC <b>异步</b>推计费/履约事件,ERP 做收款记账、MFRS15 收入确认、财报与<b>期末三方对账</b>(Stripe payout ↔ 订单 ↔ ERP 分录),<b>不在购买关键路径上、不阻断开通</b>。⚠️ 制裁/出口管制边界需<b>专业律师评估</b>(见 TODO L6)。
+    </div>
+  </div>
+
+  <!-- SEQUENCE -->
+  <div class="card">
+    <h2>2 · 端到端时序图 <span class="tag">下单 → 收款 → 自动开通</span></h2>
+    <div class="sub">一笔 Professional 自助订单的完整链路,含合规校验、Stripe Webhook 驱动开通、发票合规上报。</div>
+    <div class="mermaid">
+sequenceDiagram
+  autonumber
+  actor C as 客户
+  participant FE as 购买前端
+  participant API as Lingee BC
+  participant CMP as 合规服务
+  participant S as Stripe
+  participant LH as LHDN MyInvois
+  participant PV as 灵基KDM
+  participant T as Lingee 租户
+  participant ERP as 金蝶 ERP
+
+  C->>FE: 选版本/席位/周期(+增购点数)
+  FE->>API: 创建报价(国家·税务判定)
+  API->>CMP: 制裁名单筛查 + 公司信息校验
+  CMP-->>API: 通过
+  API->>S: 创建 Customer + Checkout Session(dynamic_tax_rates 按账单地址匹配)
+  S-->>FE: 返回结账页(卡/转账/钱包)
+  C->>FE: 勾选协议(记版本号)
+  FE->>API: 同意存证(谁·何时·版本·IP)
+  C->>S: 完成支付
+  Note over S: 卡=实时 / 转账=T+N 到账
+
+  S-->>API: Webhook: payment_succeeded(验签 + 幂等)
+  rect rgb(236,253,243)
+    Note over API: 开通前闸(操作层,秒级,不等 ERP)
+    API->>API: 履约对账:流水↔订单匹配 + 金额一致
+    API->>API: Radar 评分 + BIN/IP/地址交叉 + 受限国家校验
+    API->>CMP: 制裁 + 出口管制名单筛查
+    CMP-->>API: pass / 命中 / 受限国家
+    alt 不匹配 / 高风险 / 命中名单 / 受限国家
+      API-->>FE: 转人工审 或 拒绝(不开通,可退款)
+    end
+    API->>ERP: TID/SN 对齐:按去重键查客户(TID)+ 是否已有该产品订阅(SN)
+    ERP-->>API: 已有 TID+SN→增购 / 无→新购 / 模糊→人工 / 超时→进队列重试
+    alt 冲突(入口初判 vs KBC)或 KBC 超时
+      API-->>FE: 转人工复核 或 待开通队列(客户见"处理中",不报错)
+    end
+  end
+
+  Note over API,PV: 对齐 + 流水 + 风控均通过 → 触发开通(增购挂已有租户,不另开)
+  par 履约(通过后调用灵基 KDM)
+    API->>PV: 触发开通(带 new_business / expansion + SN)
+    PV->>T: 建生产+沙箱租户(隔离)
+    PV->>T: 激活席位 + 开权益(版本→功能)
+    PV->>T: 派发赠送点数 + 注入增购点数 + 计量
+  and 财税处理
+    API->>S: 生成发票(Invoicing)
+    S->>LH: 上报 MyInvois 取合规发票
+    LH-->>API: 合规发票号/二维码
+  end
+  PV-->>API: 开通完成
+  API->>FE: 推送开通成功 + 登录链接
+  FE-->>C: 进入生产/沙箱 + 收到合规发票
+
+  Note over API,ERP: 开通后 · 异步(不在关键路径)
+  API->>ERP: 推送计费/履约事件 → 收款记账 + MFRS15 收入确认
+
+  Note over C,ERP: 后续:续费(Billing)·按月派发点数定时任务(KDM)·用量计量·<br/>席位增减·退款/拒付·退款后环境回收(KDM:租户 suspended→保留期→terminated、点数清零、发票红冲)·期末三方对账(Stripe payout ↔ Lingee BC 订单 ↔ ERP 分录)
+    </div>
+    <div class="note">
+      <b>关键设计点:</b>① 开通由 <b>Stripe Webhook 异步驱动</b>,不要在前端"支付成功"回调里开通(转账/异步支付会漏单);② Webhook 必须<b>验签 + 幂等</b>+失败重试;③ <b>支付成功 ≠ 立即开通</b>——先做<b>履约对账(流水↔订单匹配)</b>、过<b>风控/合规闸</b>(Radar + 制裁筛查)、再过 <b>TID/SN 对齐闸</b>(问 KBC 这客户是否已有该产品订阅→判增购/新购,防"线下新购+线上增购开出两个租户";冲突转人工、KBC 超时进待开通队列不报错),全过才调用 KDM 开通;④ <b>两种对账分层:履约对账在 Lingee BC(秒级、开通前置、不等 ERP);财务记账/收入确认/期末三方对账在金蝶 ERP(开通后异步、不阻断)</b>;⑤ 赠送点数需<b>按月定时任务</b>派发并当月清零;⑥ <b>同意存证</b>在支付前完成并落库。
+    </div>
+  </div>
+
+  <!-- ORDER STATE MACHINE -->
+  <div class="card">
+    <h2>3 · 订单状态机 <span class="tag">ORDER.status · 9 状态</span></h2>
+    <div class="sub">一笔订单从待支付到终态的全部流转。详细的状态定义、每个状态页展示什么见 lingee-order-states.html。</div>
+    <div class="mermaid">
+stateDiagram-v2
+  [*] --> pending_payment: 点 Continue to payment<br/>(建单 + 同意存证)
+  pending_payment --> under_review: 支付成功(Webhook)
+  pending_payment --> pending_payment: 支付失败(payment_failed 提示页)<br/>/ 稍后再说(留单)
+  pending_payment --> cancelled: 客户主动取消
+  pending_payment --> closed: 14天未付,自动关闭
+  under_review --> provisioning: 风控/合规通过
+  under_review --> rejected: 命中制裁/受限国家
+  provisioning --> completed: 履约完成(建租户/加席位/续期/减配)
+  provisioning --> activation_failed: 履约失败
+  rejected --> refunded: 全额退款 + 环境回收
+  activation_failed --> completed: 人工补做成功
+  activation_failed --> refunded: 全额退款 + 环境回收
+  completed --> [*]
+  cancelled --> [*]
+  closed --> [*]
+  refunded --> [*]
+    </div>
+    <div class="note">
+      <b>读图要点:</b><code>payment_failed</code> 不是订单状态,是 <code>pending_payment</code> 下"某次支付尝试失败"的提示(记在 PAYMENT 实体),订单仍待支付、14 天内可重试。<code>cancelled</code>(主动取消)与 <code>closed</code>(超时关闭)分开记。<code>rejected</code>(合规拒绝)/ <code>activation_failed</code>(开通失败)必给退款出口;进入 <code>refunded</code> 同时触发环境回收(见下方租户回收状态机)。
+    </div>
+  </div>
+
+  <!-- REFUND SEQUENCE -->
+  <div class="card">
+    <h2>4 · 退款时序图 <span class="tag">发起 → 审批 → 退款 → 环境回收</span></h2>
+    <div class="sub">三种发起源汇到同一条退款链:钱由 Stripe 退、业务确认邮件由 Lingee 发、退款成功后 KDM 回收环境。</div>
+    <div class="mermaid">
+sequenceDiagram
+  autonumber
+  actor C as 客户
+  participant FE as 购买前端
+  participant API as Lingee BC
+  actor OPS as 客服/运营
+  participant S as Stripe
+  participant LH as LHDN MyInvois
+  participant PV as 灵基KDM
+  participant T as Lingee 租户
+  participant ERP as 金蝶 ERP
+
+  alt 系统自动(合规拒绝 / 开通失败)
+    API->>API: 自建 REFUND(reason 系统填, source=system)
+    Note over API: 我方责任,免审批,直接退
+  else 客服后台发起
+    OPS->>API: 在退款页/订单详情发起退款(选 reason)
+  else 客户工单申请
+    C->>FE: Contact support 提交(topic=refund)
+    FE->>API: 建 SUPPORT_REQUEST
+    OPS->>API: 核实后转 REFUND(source=customer_request)
+  end
+
+  opt 开通后退款
+    OPS->>API: 人工审批(第二人)+ 填审批意见,写 AUDIT_LOG
+  end
+
+  API->>S: POST v1 refunds(payment_intent + amount,原路退回)
+  S-->>API: REFUND.status=pending
+  Note over S,C: Stripe 原路退回原卡 5–10 个工作日
+
+  rect rgb(236,253,243)
+    Note over API,T: 退款成功后:环境回收(KDM 编排)
+    S-->>API: Webhook charge.refunded,REFUND.status=succeeded
+    API->>API: ORDER 置 refunded,SUBSCRIPTION 置 canceled,写 ORDER_EVENT
+    API->>PV: 触发回收
+    PV->>T: 租户 suspended,保留期默认30天只读供导出,到期 terminated 删/匿名化
+    PV->>T: SEAT 置 revoked,增购点数 POINT_LEDGER 写 revoke 清零
+    API->>S: 退订 stripe_sub_id(防再扣费)
+  end
+
+  API->>S: 开 credit note(冲原 stripe_invoice)
+  API->>LH: 上报 MyInvois 红冲(doc_type=credit_note),取红冲凭证
+  API->>ERP: 异步推冲减事件,收入冲减(MFRS15)
+  API->>C: 发 refund_confirmation 通知(含数据将于 N 天后删除)
+  Note over API,C: 钱由 Stripe 退;业务确认邮件由 Lingee 发
+    </div>
+    <div class="note">
+      <b>读图要点:</b>① <b>三发起源</b>(系统自动 / 客服发起 / 客户工单)汇到同一条 REFUND;客户只能"申请"不能自己退;② <b>合规拒绝/开通失败免审批</b>(我方责任),<b>开通后退款需第二人审批</b>并写 AUDIT_LOG;③ 退款一律<b>后端调 Stripe Refund API</b>,非后台手动点;④ <code>charge.refunded</code> 是退款<b>成功回执</b>,它触发<b>环境回收</b>;⑤ 钱由 Stripe 退、<b>业务确认邮件由 Lingee 发</b>;⑥ 财务侧发票红冲 + ERP 收入冲减<b>异步、不阻断</b>。
+    </div>
+  </div>
+
+  <!-- TENANT RECOVERY STATE -->
+  <div class="card">
+    <h2>5 · 租户回收状态机 <span class="tag">退款后数据生命周期</span></h2>
+    <div class="sub">不立即物理删:先停用、再留 30 天保留期供客户导出/反悔,到期才销毁(SaaS 标准 + PDPA 友好)。</div>
+    <div class="mermaid">
+stateDiagram-v2
+  [*] --> ready: 开通成功
+  ready --> suspended: 退款成功(立即停登录)
+  suspended --> grace_period: 进入保留期(默认30天·只读·可导出)
+  grace_period --> terminated: 保留期到期(删除/匿名化数据)
+  grace_period --> ready: 客户反悔/重新购买(恢复)
+  terminated --> [*]
+    </div>
+    <div class="note">
+      <b>读图要点:</b>① <code>suspended</code> = 立即停止登录但<b>数据还在</b>;② <code>grace_period</code> 默认 <b>30 天只读</b>,客户可导出数据、也可反悔恢复;③ <code>terminated</code> = 真正删除/匿名化,记 <code>terminated_at</code>;④ <b>合规拒绝</b>时环境从未建、无需回收;<b>开通失败</b>清理半成品。对应 TENANT.status 枚举,详见数据模型。
+    </div>
+  </div>
+
+  <!-- USER PURCHASE FLOW -->
+  <div class="card">
+    <h2>6 · 用户购买流程图 <span class="tag">客户视角 · 含失败分支</span></h2>
+    <div class="sub">从客户视角看自助购买旅程:选品 → 填信息 → 支付 → 开通,以及每个环节的失败/异常去向。</div>
+    <div class="mermaid">
+flowchart TD
+  A([进入购买页]) --> B{选择版本}
+  B -- Professional --> C[配置席位/周期/点数]
+  B -- Premium --> Z[Contact Sales 表单<br/>→ 转销售漏斗 LEAD]
+  C --> D[填公司信息 + 勾选协议<br/>同意存证]
+  D --> E[Stripe 嵌入收银台付款]
+  E -- 支付失败 --> E1[payment_failed 提示页<br/>未扣款·可重试/换卡]
+  E1 --> E
+  E -- 14天未付 --> E2[[closed 超时关闭]]
+  E -- 支付成功 --> F{风控/合规闸}
+  F -- 命中制裁/受限 --> G[[rejected 无法履约<br/>全额退款 + 通知]]
+  F -- 高风险 --> H[转人工审核]
+  H -- 放行 --> I
+  H -- 拦截 --> G
+  F -- 通过 --> I[开通中 provisioning<br/>建生产+沙箱租户]
+  I -- 建租户失败 --> J[[activation_failed<br/>补开 或 全额退款]]
+  I -- 成功 --> K([completed 履约完成<br/>登录链接 + 合规发票])
+  J -- 人工补开 --> K
+    </div>
+    <div class="note">
+      <b>读图要点:</b>客户能看到的状态页对应 lingee-order-states.html。<b>每个"已付款的异常"(rejected / activation_failed)都给退款出口</b>,不让"钱付了没东西"。Premium 不走自助支付,转销售漏斗。<code>payment_failed</code> 是提示页非终态,14 天内可重试。
+    </div>
+  </div>
+
+  <!-- DATA FLOW (SoT view) -->
+  <div class="card">
+    <h2>7 · 数据流转图 <span class="tag">谁产生 · 谁是 SoT · 谁消费</span></h2>
+    <div class="sub">关键数据在各系统间怎么流、权威源(SoT)在哪。实线=数据写入/产生,虚线=只读引用/同步。</div>
+    <div class="mermaid">
+flowchart LR
+  subgraph FEZ["购买前端"]
+    U[用户输入<br/>公司/邮箱/席位]
+  end
+  subgraph BCZ["Lingee BC · 商务 SoT"]
+    ORD[ORDER / ORDER_ITEM]
+    PAY[PAYMENT 镜像]
+    INV[INVOICE]
+    APR[APPROVAL / AUDIT_LOG]
+  end
+  subgraph STZ["Stripe · 支付 SoT"]
+    CHK[Checkout / PaymentIntent]
+    POUT[Payout 结算 MYR]
+  end
+  subgraph KDMZ["灵基 KDM · 履约 SoT"]
+    TEN[TENANT / SEAT / POINT_LEDGER]
+  end
+  subgraph EXTZ["外部"]
+    LHN[LHDN MyInvois]
+    ERPF[金蝶 ERP · 财务 SoT]
+  end
+
+  U --> ORD
+  ORD --> CHK
+  CHK -- "amount/tax/结算 回传" --> PAY
+  PAY -. 镜像 .-> ORD
+  ORD -- 风控通过 --> TEN
+  ORD --> INV
+  INV -- 经中间件上报 --> LHN
+  LHN -. 合规号/二维码 .-> INV
+  POUT -. 对账 .-> PAY
+  ORD -- 计费/履约事件(异步) --> ERPF
+  CHK -. webhook .-> PAY
+    </div>
+    <div class="note">
+      <b>读图要点:</b>每类数据只有一个 <b>SoT</b>:订单/发票/审批在 Lingee BC;支付结果/税额/结算在 Stripe(BC 存镜像);租户/席位/点数在 KDM;财务记账在金蝶 ERP。BC 用 <code>stripe_*_id</code> 映射 + Webhook/对账保持一致,<b>不重复造权威数据</b>。发票合规号来自 LHDN(经本地中间件)。
+    </div>
+  </div>
+
+  <!-- RESPONSIBILITY SPLIT -->
+  <div class="card">
+    <h2>8 · 职责分工速查</h2>
+    <div class="sub">同一件事,Stripe 到哪、你接着做什么。</div>
+    <div class="kbox">
+      <div class="kcol">
+        <h3><span class="dot d-stripe"></span>Stripe 负责</h3>
+        <ul>
+          <li>收款:卡 / 本地钱包(FPX·GrabPay)/ Apple Pay·Google Pay·Link</li>
+          <li>订阅计费、续费、按席位、升级 proration</li>
+          <li>手动 Tax Rate + dynamic_tax_rates 按账单地址匹配(Stripe Tax 不支持马来主体)</li>
+          <li>发票生成、催款(dunning)、失败重试</li>
+          <li>退款、拒付(chargeback)通道</li>
+          <li>PCI-DSS、账户层 KYB/AML</li>
+        </ul>
+      </div>
+      <div class="kcol">
+        <h3><span class="dot d-self"></span>Lingee BC 要做(商业中心 / 商务层)</h3>
+        <ul>
+          <li><b>税务:</b>MyInvois 合规发票上报 · SST/出口零税率判定 · 预提税</li>
+          <li><b>法律:</b>真实协议/DPA/SLA · 同意存证 · 制裁筛查 · 主体披露</li>
+          <li><b>数据:</b>PDPA · 子处理方清单 · ERP数据流向授权</li>
+          <li><b>资金:</b><b>履约对账(流水↔订单匹配,开通前置闸)</b> · 开通后异步推计费/履约事件给 ERP · FX 双口径(USD 收款 / MYR 结算)</li>
+          <li><b>编排:</b>Webhook(验签/幂等/重试)→ 履约对账 → 风控/合规闸 → <b>TID/SN 对齐闸(问 KBC 判增购/新购,防开两个租户)</b> → 调用灵基 KDM 开通</li>
+          <li><b>体验:</b>订单状态机 · 自助管理后台 · 续费提醒 · Premium报价</li>
+          <li><b>客户:</b><b>客户 360</b>(以客户为中心聚合:身份+多联系人+多套订阅+订单/工单历史+累计消费 LTV)· <b>收发消息总账 MESSAGE_LOG</b>(BC↔客户所有收发全量留痕,出/入站,前台可查;工单对话与通知记录的底层)· 集成事件中心(Stripe/KDM/MyInvois/邮件/ERP 出入站事件 + 重试)· 通知体系(交易类 + 运营公告,邮件 + 站内推送)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note" style="margin-top:14px">
+      <b>另两方的归属:</b><span style="color:#0EA5E9;font-weight:700">灵基 KDM(产品层)</span>——建生产+沙箱租户、权益开关、点数派发与<b>用量计量</b>、数据驻留区域;<span style="color:#0EA5E9;font-weight:700">金蝶 ERP(财务大后端)</span>——<b>收款记账</b>、按 <b>MFRS 15</b> 做收入确认分摊、出财报、<b>期末三方对账</b>(Stripe payout ↔ Lingee BC 订单 ↔ ERP 分录)。<br><b>对账的两层分工(重点):</b>Lingee BC 做<b>履约对账</b>(流水↔订单匹配,目的是"能不能开通",在关键路径、秒级、不等 ERP);金蝶 ERP 做<b>财务对账与记账</b>(目的是"账对不对、报表准不准",开通后异步、不阻断)。Lingee BC <b>不自己建租户、不自己做账</b>。
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">用浏览器打开本文件即可查看(需联网加载 Mermaid)。颜色对应顶部图例。</p>
+
+</div>
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', securityLevel:'loose',
+    themeVariables:{ fontFamily:"-apple-system,'PingFang SC',sans-serif", fontSize:'13px' },
+    flowchart:{ curve:'basis', nodeSpacing:42, rankSpacing:54 } });
+</script>
+</body>
+</html>

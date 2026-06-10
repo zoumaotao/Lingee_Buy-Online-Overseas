@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee × Stripe · 配置与研发对接说明</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#6C5CE7;--ink:#21242F;--muted:#6B7080;--line:#E7E8F0;--bg:#F4F3FB;--card:#fff;--ok:#16A34A;--stripe:#635BFF;--code:#0F172A}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 24px 80px}
+h1{font-size:25px;font-weight:800;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:13.5px;margin:8px 0 8px}
+.meta{color:var(--muted);font-size:12px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-bottom:20px;box-shadow:0 4px 18px rgba(76,60,180,.05)}
+.card h2{font-size:17px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+.card h2 .n{width:26px;height:26px;border-radius:8px;background:#F0EEFC;color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.card .sub{color:var(--muted);font-size:12.5px;margin-bottom:16px}
+.done-tag{font-size:10.5px;font-weight:700;color:#166534;background:#DCFCE7;border:1px solid #86EFAC;border-radius:6px;padding:2px 9px;margin-left:6px}
+.todo-tag{font-size:10.5px;font-weight:700;color:#9A3412;background:#FFEDD5;border:1px solid #FDBA74;border-radius:6px;padding:2px 9px;margin-left:6px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #F1F2F8;vertical-align:top}
+th{background:#FAFAFE;font-weight:700;color:#475569}
+td code,.ic{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-family:'SF Mono',Menlo,monospace;font-size:11.5px}
+ul{list-style:none;margin-top:6px}
+li{padding:5px 0 5px 20px;position:relative;font-size:12.5px;color:#3D414E}
+li::before{content:'▸';position:absolute;left:2px;color:var(--pri)}
+li b{color:var(--ink)}
+pre{background:var(--code);color:#E2E8F0;border-radius:10px;padding:16px 18px;font-size:12px;line-height:1.7;overflow-x:auto;margin-top:10px;font-family:'SF Mono',Menlo,monospace}
+pre .c{color:#7DD3FC}
+pre .k{color:#C4B5FD}
+pre .s{color:#86EFAC}
+.note{font-size:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 15px;margin-top:12px;color:#92400E}
+.note.blue{background:#EEF2FF;border-color:#C7D2FE;color:#3730A3}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;margin-top:8px}
+.flow .b{background:#F0EEFC;border:1px solid #D9D6FB;border-radius:8px;padding:7px 11px;font-weight:600;color:#4338CA}
+.flow .a{color:var(--muted)}
+.pill{font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE;margin:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lingee × Stripe · 配置与研发对接说明</h1>
+  <p class="lead">海外自助购买(Professional)的支付与开通对接。经营主体 <b>KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD.</b>,收款走 Stripe,采用 <b>Embedded Checkout(站内嵌入)</b>。</p>
+  <p class="meta">本文档是<b>给研发的 Stripe 技术对接手册</b>(配置对象 + 代码参数),与 lingee-todolist.html(全局项目任务/优先级)分工不同。配合 lingee-architecture.html(架构/时序)与 lingee-data-model.html(数据模型)一起看。</p>
+
+  <!-- 1 -->
+  <div class="card">
+    <h2><span class="n">1</span> 已在 Stripe 后台配置 <span class="done-tag">运营已完成</span></h2>
+    <div class="sub">研发可直接引用这些对象;Price ID 在 Stripe Dashboard 产品页复制。</div>
+
+    <b style="font-size:13px">产品与价格(Product / Price)</b>
+    <table>
+      <tr><th>对象</th><th>类型</th><th>金额</th><th>Stripe ID</th><th>用途</th></tr>
+      <tr><td>Lingee Professional</td><td>Product</td><td>—</td><td class="mono">prod_UevXhqCeiUeH4C</td><td>主产品</td></tr>
+      <tr><td>└ 月订阅</td><td>Price · recurring/月</td><td>USD $15 / seat</td><td class="mono">price_1TfbgGAYtN4d3VHPV61VuyL5</td><td>按月,数量=席位</td></tr>
+      <tr><td>└ 年订阅</td><td>Price · recurring/年</td><td>USD $180 / seat</td><td class="mono">price_1Tfbl4AYtN4d3VHPfEz9k9oK</td><td>按年,数量=席位</td></tr>
+      <tr><td>└ 点数包</td><td>Price · one-time</td><td>USD $300 / 10,000 units</td><td class="mono">price_1Tfbl4AYtN4d3VHPTwBNxz27</td><td>一次性,数量=包数</td></tr>
+    </table>
+    <div class="note"><b>币种与结算(钉死,勿各写各的):</b><br>
+      <b>presentment currency = USD</b>——Stripe Price 对象按 <b>USD</b> 建,<b>客户卡上被扣的是 USD</b>(发卡行再换成持卡人本国币,与我方无关)。<br>
+      <b>结算到商户 = MYR</b>,分两个数:① <b>毛换汇</b> = 含税总额 × Stripe 换汇汇率;② <b>净到账 payout</b> = 毛换汇 − <b>Stripe 手续费</b>(真正打到马来银行账户的钱)。后台「结算到账(MYR)」列展示<b>净额</b>,详情页拆 毛/费/净三项。<br>
+      <b>退款</b>原路退回原始 USD 扣款,<b>不按退款当天新汇率重算</b>(实时汇率只在下单付款那一刻生效)。<br>
+      <b>发票币种:MYR 为主</b>(马来主体的 SST 以 MYR 向 LHDN 申报)<b>+ USD 辅</b>(客户计价币种)并列展示;<b>按开票日汇率换算 MYR</b>(LHDN 要求外币发票列示开票日 MYR 等值;汇率源用 BNM 开票日参考汇率)。<br>
+      <b>⚠️ 这个发票汇率只影响"报税口径",不影响资金:</b>客户实付 USD(发卡行换汇)、Stripe 按 payout 当时汇率结算 MYR 给你——两者与发票汇率无关。所以发票上的 MYR(开票日汇率)与银行实收 MYR(payout 日汇率、已扣手续费)不一致是<b>正常</b>的,是两个口径。</div>
+
+    <b style="font-size:13px;display:block;margin-top:16px">已启用支付方式(收银台按客户地区自动展示)</b>
+    <div style="margin-top:8px">
+      <span class="pill">💳 银行卡(所有地区)</span>
+      <span class="pill"> Apple Pay</span>
+      <span class="pill">Google Pay</span>
+      <span class="pill">GrabPay(马/新)</span>
+      <span class="pill">FPX(马来网银)</span>
+      <span class="pill">Link</span>
+    </div>
+    <ul>
+      <li>支付宝(中国)→ <b>已取消</b>(无中国大陆客户)</li>
+      <li>银行转账 → <b>暂不做</b>(卡+FPX+钱包已覆盖,后续按需)</li>
+    </ul>
+
+    <b style="font-size:13px;display:block;margin-top:14px">品牌 & 集成方式</b>
+    <ul>
+      <li>Branding:已上传 Logo,强调色 <code>#635BFF</code>(紫)</li>
+      <li>集成方式:<b>预构建结账表单 → Embedded Checkout(站内嵌入)</b></li>
+    </ul>
+  </div>
+
+  <!-- 2 -->
+  <div class="card">
+    <h2><span class="n">2</span> 账户状态 &amp; 还需完成的</h2>
+    <b style="font-size:13px">已完成 <span class="done-tag">✓</span></b>
+    <ul>
+      <li><b>账户 KYB(主体认证)</b>:商家验证文件 + 企业代表身份证明 已完成</li>
+      <li><b>API Keys</b>:test + live 密钥已交研发</li>
+      <li><b>已能收款到商户</b>:账户已激活</li>
+    </ul>
+    <b style="font-size:13px;display:block;margin-top:14px">仍需完成 <span class="todo-tag">待办</span></b>
+    <ul>
+      <li><b>税率(手动 Tax Rates + dynamic)</b>:⚠️ Stripe Tax 不支持马来本地主体。已建手动税率「<b>Malaysia SST 8%</b>」(地区=Malaysia,不含税),<b>Tax Rate ID:</b> <code>txr_1Tfc93AYtN4d3VHPgvmCZ3fN</code>。研发用 <b>dynamic_tax_rates</b> 让 Stripe 按账单地址自动匹配(马来套 SST、海外零税率),无需前端判断。<br><span style="color:var(--muted)">SST 最终以 MyInvois 发票为准,建议财税确认。</span></li>
+      <li><b>Webhook 端点</b>:Developers → Webhooks 新增端点,取 <code>signing secret</code> 给研发</li>
+    </ul>
+  </div>
+
+  <!-- 3 -->
+  <div class="card">
+    <h2><span class="n">3</span> 研发:整体流程 <span class="todo-tag">待开发</span></h2>
+    <div class="flow">
+      <span class="b">前端 Step1-2</span><span class="a">→</span>
+      <span class="b">后端建 Checkout Session</span><span class="a">→</span>
+      <span class="b">前端嵌入收银台</span><span class="a">→</span>
+      <span class="b">客户付款</span><span class="a">→</span>
+      <span class="b">Webhook</span><span class="a">→</span>
+      <span class="b">风控闸</span><span class="a">→</span>
+      <span class="b">调灵基KDM开通</span>
+    </div>
+    <div class="note blue">核心原则:<b>开通只在 Webhook 里做</b>,不要依赖前端 return_url(异步支付会漏单)。Webhook 必须<b>验签 + 幂等</b>。</div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card">
+    <h2><span class="n">4</span> 研发:创建 Checkout Session(后端)</h2>
+    <div class="sub">客户在 Step 2 点"Continue to payment"时调用。关键参数如下(Node 伪代码)。</div>
+    <pre><span class="c">// POST /api/checkout — 创建嵌入式 Checkout Session</span>
+<span class="k">const</span> session = <span class="k">await</span> stripe.checkout.sessions.create({
+  ui_mode: <span class="s">'embedded'</span>,            <span class="c">// ← 站内嵌入(关键)</span>
+  mode: <span class="s">'subscription'</span>,          <span class="c">// 订阅;纯点数包用 'payment'</span>
+  line_items: [
+    { price: <span class="s">'price_1Tfbl4AYtN4d3VHPfEz9k9oK'</span>, quantity: seats,
+      dynamic_tax_rates: [<span class="s">'txr_1Tfc93AYtN4d3VHPgvmCZ3fN'</span>] },   <span class="c">// 年订阅 price;月付用 price_1TfbgGAYtN4d3VHPV61VuyL5。Stripe 按账单地址匹配:马来→SST,海外→零税</span>
+    { price: <span class="s">'price_1Tfbl4AYtN4d3VHPTwBNxz27'</span>,  quantity: unitPacks,
+      dynamic_tax_rates: [<span class="s">'txr_1Tfc93AYtN4d3VHPgvmCZ3fN'</span>] }
+  ],
+  customer_email: buyerEmail,        <span class="c">// Step2 收集的邮箱</span>
+  customer_update: { address: <span class="s">'auto'</span> }, <span class="c">// 用账单地址匹配税率(dynamic tax rates 必需)</span>
+  tax_id_collection: { enabled: <span class="k">true</span> }, <span class="c">// 收税号(零税率/反向征收依据)</span>
+  billing_address_collection: <span class="s">'required'</span>,  <span class="c">// 账单地址在 Stripe 收银台收</span>
+  return_url: <span class="s">'https://buy.lingee.app/done?session_id={CHECKOUT_SESSION_ID}'</span>,
+  metadata: { orderId, edition: <span class="s">'professional'</span>, seats, term } <span class="c">// 自家订单关联</span>
+});
+<span class="k">return</span> { clientSecret: session.client_secret };</pre>
+    <div class="note">✅ 用 <b>dynamic_tax_rates</b>(非 automatic_tax,Stripe Tax 不支持马来):Stripe 按客户在收银台填的<b>账单地址</b>自动匹配税率——马来地址套 SST 8%,海外无匹配=零税率。<b>前端/Step2 不判断国家、不做一致性校验、无退款逻辑。</b>席位数=<code>quantity</code>;<code>metadata</code> 带订单号供 Webhook 关联。</div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card">
+    <h2><span class="n">5</span> 研发:前端嵌入收银台</h2>
+    <div class="sub">把上一步的 clientSecret 挂到 Step 3 的容器里,收银台渲染在页面内、不跳走。</div>
+    <pre><span class="k">const</span> stripe = Stripe(<span class="s">'pk_live_xxx'</span>);
+<span class="k">const</span> checkout = <span class="k">await</span> stripe.initEmbeddedCheckout({
+  fetchClientSecret: () => fetch(<span class="s">'/api/checkout'</span>, {method:<span class="s">'POST'</span>})
+                            .then(r => r.json()).then(d => d.clientSecret)
+});
+checkout.mount(<span class="s">'#checkout-container'</span>);  <span class="c">// ← Step3 那个 div</span></pre>
+    <ul>
+      <li>支付方式(卡/FPX/GrabPay/Apple/Google Pay/Link)<b>由 Stripe 按客户地区自动展示</b>,无需前端逐个画</li>
+      <li>税额按手动税率(马来 SST 8% / 海外零税率)计算并显示在收银台</li>
+    </ul>
+  </div>
+
+  <!-- 6 -->
+  <!-- 6 -->
+  <div class="card">
+    <h2><span class="n">6</span> 研发:Webhook 事件订阅清单(在 Stripe 端点勾选)</h2>
+    <div class="sub">在 Stripe Dashboard → Developers → Webhooks 新建端点时,<b>只勾下表这些事件</b>(不要选 “all events”,噪音大且费配额)。每个事件到达后按“动作 / 落库实体”处理;全部先验签 + 按 <code>event.id</code> 幂等去重。</div>
+    <table>
+      <tr><th style="width:32px">#</th><th>Stripe 事件</th><th>何时触发</th><th>系统动作</th><th>落库实体</th></tr>
+      <tr><td><b>结账 / 开通</b></td><td colspan="4"></td></tr>
+      <tr><td>1</td><td><code>checkout.session.completed</code></td><td>同步付款完成(卡 / 钱包)</td><td><b>开通主入口</b>:进 under_review → 履约对账 + 风控闸 + TID/SN 对齐 → 调 KDM 建租户</td><td>ORDER · PAYMENT</td></tr>
+      <tr><td>2</td><td><code>checkout.session.async_payment_succeeded</code></td><td>异步付款成功(FPX 等延迟到账)</td><td>同上——异步方式付款的开通入口(<b>所以开通绝不能只靠前端 return_url</b>)</td><td>ORDER · PAYMENT</td></tr>
+      <tr><td>3</td><td><code>checkout.session.async_payment_failed</code></td><td>异步付款最终失败</td><td>订单保持 pending_payment,提示客户重试;不开通</td><td>PAYMENT</td></tr>
+      <tr><td>4</td><td><code>checkout.session.expired</code></td><td>结账会话超时未付</td><td>释放预留,订单到期 closed(配合 14 天规则)</td><td>ORDER</td></tr>
+      <tr><td><b>支付 / 风险</b></td><td colspan="4"></td></tr>
+      <tr><td>5</td><td><code>payment_intent.succeeded</code></td><td>扣款成功(权威资金事件)</td><td>回填 amount_subtotal / tax / total + Radar <code>risk_score/level</code> 镜像成 COMPLIANCE_CHECK</td><td>PAYMENT · COMPLIANCE_CHECK</td></tr>
+      <tr><td>6</td><td><code>payment_intent.payment_failed</code></td><td>一次支付尝试失败</td><td>记一条失败 PAYMENT(含失败码),<b>订单仍 pending_payment</b>(不污染订单状态)</td><td>PAYMENT</td></tr>
+      <tr><td>7</td><td><code>charge.refunded</code></td><td>退款已发生(回执)</td><td>更新 REFUND→succeeded + 触发环境回收(KDM)+ 红冲发票 + 通知</td><td>REFUND</td></tr>
+      <tr><td>8</td><td><code>charge.dispute.created</code></td><td>持卡人发起拒付</td><td>建 DISPUTE,进举证流程;回流客户历史抬高同账户风险分</td><td>DISPUTE</td></tr>
+      <tr><td>9</td><td><code>charge.dispute.closed</code></td><td>拒付结案(won / lost)</td><td>更新 DISPUTE 结果;lost 收手续费,按结果决定是否回收环境</td><td>DISPUTE</td></tr>
+      <tr><td><b>订阅 / 续费</b></td><td colspan="4"></td></tr>
+      <tr><td>10</td><td><code>invoice.paid</code></td><td>订阅续费扣款成功</td><td>续期服务期、延展权益(续费在下一周期开始时交付给 KDM)</td><td>ORDER(renewal)· INVOICE</td></tr>
+      <tr><td>11</td><td><code>invoice.payment_failed</code></td><td>续费扣款失败</td><td>进 dunning(催缴)流程,订阅置 past_due;多次失败按策略停用</td><td>SUBSCRIPTION</td></tr>
+      <tr><td>12</td><td><code>customer.subscription.updated</code></td><td>客户在门户改自动续费 / Stripe 改订阅</td><td>镜像 auto-renew / 数量等状态(本系统只读镜像 Stripe)</td><td>SUBSCRIPTION</td></tr>
+      <tr><td>13</td><td><code>customer.subscription.deleted</code></td><td>订阅到期 / 取消终止</td><td>订阅置 canceled / expired,按策略走环境保留期</td><td>SUBSCRIPTION</td></tr>
+    </table>
+    <div class="note blue"><b>三条铁律:</b>① <b>开通只由 Webhook 驱动</b>,绝不依赖前端 <code>return_url</code>(异步付款会漏单);② 每个事件<b>先验签</b>(用端点 signing secret)<b>再按 <code>event.id</code> 幂等去重</b>(重复推送不重复开通 / 不重复退款);③ 资金真值以 Stripe 回传为准,前端/后台不重算金额、税、汇率。</div>
+    <div class="note">事件分两类用途:<b>触发动作类</b>(1/2/7/8/10/11 会推进业务流程)与 <b>镜像状态类</b>(5/12/13 只更新本地只读镜像)。退款<b>发起</b>是后端主动调 <code>POST /v1/refunds</code>(见下一节),<code>charge.refunded</code> 只是退款发生后的回执。MyInvois 上报不在 Stripe 事件里——由开通/续费成功后另起流程经本地 PEPPOL 中间件完成。</div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card">
+    <h2><span class="n">7</span> 研发:Webhook → 风控 → 开通(最关键)</h2>
+    <pre><span class="c">// 监听的事件(完整清单见上一节;以下为核心处理流)</span>
+checkout.session.completed                  <span class="c">// 同步付款完成(card)→ 触发开通</span>
+checkout.session.async_payment_succeeded    <span class="c">// 异步付款成功(fpx)→ 触发开通</span>
+checkout.session.async_payment_failed       <span class="c">// 异步付款失败(fpx)</span>
+payment_intent.payment_failed               <span class="c">// 支付尝试失败 → 记 PAYMENT,订单仍 pending</span>
+charge.refunded                             <span class="c">// 退款 → 记 REFUND</span>
+charge.dispute.created                      <span class="c">// 拒付发起 → 建 DISPUTE,进举证流程</span>
+charge.dispute.closed                       <span class="c">// 拒付结案(won/lost)→ 更新 DISPUTE</span>
+invoice.paid                                <span class="c">// 续费成功</span>
+invoice.payment_failed                      <span class="c">// 续费失败 → dunning</span>
+
+<span class="c">// 处理逻辑</span>
+1. 验签(用 webhook signing secret) + 幂等(event.id 唯一约束去重)
+2. 风控/合规闸:Radar 评分 + 制裁筛查 → 通过才继续,高风险转人工(拒付历史回流评分)
+3. 调用灵基 KDM:建生产+沙箱租户、开权益、派发赠送点数 + 注入增购点数
+4. 生成发票 → 经马来本地 e-invoice 中间件(PEPPOL)上报 LHDN MyInvois 取合规号(本地标准票 / 海外 self-billed);<b>Stripe 不替你报 MyInvois</b>,只出底票 PDF
+5. 推计费/履约事件给金蝶 ERP 做 MFRS15 收入确认
+6. 邮件:开通成功 + 登录链接</pre>
+    <div class="note">②③④⑤ 详见架构图与数据模型。开通前的<b>风控闸</b>是必须的,避免"钱收了产品也开了才发现欺诈/制裁"。</div>
+    <pre><span class="c">// 退款执行(后端调 Stripe Refund API,非后台手动点)</span>
+POST /v1/refunds  { payment_intent, amount }   <span class="c">// 默认原路退回原卡</span>
+
+<span class="c">// 谁触发 / 自动还是人工</span>
+合规拒绝 / 开通失败   → <b>系统自动全额退</b>(我方责任,按协议必退,不等人工)
+开通前客户取消       → 自动全额退(策略允许)
+开通后退款           → <b>客服发起 + 人工审批(填审批意见)</b>,通过才调 API(审批意见写 AUDIT_LOG)
+
+<span class="c">// 到账</span>
+受理后 REFUND.status=pending → 成功回传 charge.refunded → status=succeeded
+退回原卡 <b>5–10 个工作日</b>(Stripe→发卡行时效,不可控,如实告知客户)
+
+<span class="c">// 退款后:环境回收(KDM 编排,停用→保留期→销毁)</span>
+合规拒绝         → 环境未建,无需回收
+开通失败         → 清理半成品租户,SUBSCRIPTION→canceled
+开通后退款       → SUBSCRIPTION→canceled;TENANT(生产+沙箱)suspended
+                  → grace_period(默认30天,只读供导出)→ terminated(删/匿名化)
+                  SEAT→revoked;POINT_LEDGER 写 revoke 清零(增购点数失效)
+                  退订 stripe_sub_id 防再扣;发票红冲 = 调 Stripe 开 credit note + 上报 MyInvois 取红冲凭证
+                  写 ORDER_EVENT + AUDIT_LOG + 发 refund_confirmation 通知</pre>
+    <div class="note">退款金额、币种、原路均以 Stripe 回传为准;前端/后台不重算。<code>charge.refunded</code> 是退款<b>发生后</b>的回执,用来更新 REFUND 状态并触发环境回收,不是发起退款的方式。</div>
+  </div>
+
+  <!-- 8 -->
+  <div class="card">
+    <h2><span class="n">8</span> 测试</h2>
+    <ul>
+      <li>用 <b>test mode</b> + 测试卡 <code>4242 4242 4242 4242</code> 跑通全流程</li>
+      <li>用 <b>Stripe CLI</b> 把 Webhook 转发到本地:<code>stripe listen --forward-to localhost/api/webhook</code></li>
+      <li>验证:幂等(重复事件不重复开通)、税额(马来 SST vs 海外零税率)、税号收集</li>
+    </ul>
+  </div>
+
+  <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">代码为对接示意,以 Stripe 官方最新文档为准。完整任务与优先级见 lingee-todolist.html。</p>
+</div>
+</body>
+</html>

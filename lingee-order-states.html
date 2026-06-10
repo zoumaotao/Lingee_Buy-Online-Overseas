@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee 订单状态机 · 开发落地依据</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#6C5CE7;--ink:#21242F;--muted:#6B7080;--line:#E7E8F0;--bg:#F4F3FB;--card:#fff;--ok:#16A34A;--amber:#E8820C;--red:#DC2626}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:30px 22px 70px}
+h1{font-size:24px;font-weight:800}
+.lead{color:var(--muted);font-size:13.5px;margin:8px 0 20px;max-width:900px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:20px;box-shadow:0 4px 18px rgba(76,60,180,.05)}
+.card h2{font-size:17px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .ic{width:24px;height:24px;border-radius:7px;background:#F0EEFC;color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:13px}
+.mermaid{width:100%;overflow-x:auto;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #F1F2F8;vertical-align:top}
+th{background:#FAFAFE;font-weight:700;color:#475569;font-size:11.5px}
+tr:last-child td{border-bottom:none}
+code{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-family:'SF Mono',Menlo,monospace;font-size:11.5px}
+.st{font-weight:700;border-radius:6px;padding:2px 9px;font-size:11px;white-space:nowrap;display:inline-block}
+.s-pending{background:#FFF7ED;color:#9A3412;border:1px solid #FDBA74}
+.s-review{background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE}
+.s-prov{background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE}
+.s-active{background:#ECFDF3;color:#166534;border:1px solid #86EFAC}
+.s-end{background:#F1F5F9;color:#475569;border:1px solid #CBD5E1}
+.s-bad{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.note{font-size:12px;color:var(--muted);background:#FAFAFE;border:1px dashed var(--line);border-radius:10px;padding:12px 15px;margin-top:14px}
+.note b{color:var(--ink)}
+.pageblock{font-size:12.5px;color:#3D414E;line-height:1.7}
+.pageblock b{color:var(--ink)}
+.tag{font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;margin-left:6px}
+.t-page{background:#EEF2FF;color:#4338CA}
+.t-bg{background:#F1F5F9;color:#475569}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lingee 订单状态机 · 开发落地依据</h1>
+  <p class="lead">海外自助购买(Professional)。卡/FPX/钱包即时支付。本文档定义订单状态、流转条件、每个状态页展示什么、下一步引导什么。已与业务确认,直接作为开发依据。</p>
+  <div class="note"><b>适用范围:</b>本状态机针对 <b>ORDER(订单)</b>。Professional 自助购买点 "Continue to payment" 即进入 <code>pending_payment</code>。<b>Premium / 大客户走销售漏斗</b>(LEAD 线索 → OPPORTUNITY 商机),<b>只有赢单付款、生成 ORDER 后才进入本状态机</b>;赢单前的跟进状态在销售域(见数据模型),不在此。</div>
+
+  <!-- 状态流转图 -->
+  <div class="card">
+    <h2><span class="ic">⇄</span>状态流转图</h2>
+    <div class="mermaid">
+stateDiagram-v2
+  [*] --> pending_payment: 点 Continue to payment<br/>(建单 + 同意存证)
+  pending_payment --> under_review: 支付成功(Webhook)
+  pending_payment --> pending_payment: 支付失败(payment_failed 提示页)<br/>/ 稍后再说(留单)
+  pending_payment --> cancelled: 客户主动取消
+  pending_payment --> closed: 14天未付,自动关闭
+  under_review --> provisioning: 风控/合规通过
+  under_review --> rejected: 命中制裁/受限国家
+  provisioning --> completed: 履约完成(建租户/加席位/续期/减配)
+  provisioning --> activation_failed: 履约失败
+  rejected --> refunded: 全额退款
+  activation_failed --> completed: 人工补做成功
+  activation_failed --> refunded: 全额退款
+  completed --> [*]
+  cancelled --> [*]
+  closed --> [*]
+  refunded --> [*]
+    </div>
+    <div class="note"><b>关键:</b><code>payment_failed</code> 不是独立订单终态,而是 <code>pending_payment</code> 下"某次支付尝试失败"的提示页,订单仍待支付、可重试(14天内)。<code>cancelled</code>(主动取消)与 <code>closed</code>(超时关闭)分开记录,便于区分"主动放弃"与"超时流失"。</div>
+  </div>
+
+  <!-- 状态定义表 -->
+  <div class="card">
+    <h2><span class="ic">≡</span>状态定义</h2>
+    <table>
+      <tr><th>status</th><th>含义</th><th>进入条件</th><th>类型</th></tr>
+      <tr><td><span class="st s-pending">pending_payment</span></td><td>待支付:订单已建未付</td><td>点 Continue to payment</td><td>进行中</td></tr>
+      <tr><td><span class="st s-review">under_review</span></td><td>风控审核中:已付款待放行</td><td>支付成功 + 进风控闸</td><td>进行中</td></tr>
+      <tr><td><span class="st s-prov">provisioning</span></td><td>履约中:建租户 / 加席位 / 续期 / 减配</td><td>风控通过</td><td>进行中</td></tr>
+      <tr><td><span class="st s-active">completed</span></td><td>已完成:该订单履约动作完成、服务可用</td><td>履约成功</td><td>终态(成功)</td></tr>
+      <tr><td><span class="st s-bad">rejected</span></td><td>已拒绝:合规不可售</td><td>命中制裁/受限</td><td>→ refunded</td></tr>
+      <tr><td><span class="st s-bad">activation_failed</span></td><td>履约失败:已付款未完成</td><td>建租户/变更异常</td><td>→ completed / refunded</td></tr>
+      <tr><td><span class="st s-end">cancelled</span></td><td>已取消:客户主动放弃</td><td>客户点取消并确认</td><td>终态</td></tr>
+      <tr><td><span class="st s-end">closed</span></td><td>已关闭:超时未付</td><td>pending 超 14 天</td><td>终态</td></tr>
+      <tr><td><span class="st s-end">refunded</span></td><td>已退款(+ 环境回收)</td><td>rejected/activation_failed/开通后退款 完成</td><td>终态</td></tr>
+    </table>
+    <div class="note"><code>payment_failed</code> = 一次支付尝试的结果(展示用),非订单状态字段值。订单此时仍为 <code>pending_payment</code>。<br>
+      <b>为什么成功终态叫 <code>completed</code> 而不是 <code>active</code>:</b><code>active</code> 是<b>订阅 / 租户</b>的生命周期状态(SUBSCRIPTION.status / TENANT),表示"服务在线";<b>订单</b>的成功终态表示"<b>这笔订单的履约动作做完了</b>",对四种 order_type 都成立——<code>new_business</code> 建租户、<code>expansion</code> 加席位/点数、<code>renewal</code> 延期、<code>contraction</code> 减配,做完都置 <code>completed</code>(只有新购独有"建租户"这一步)。两者分层,避免把"订单完成"和"租户 active"混为一谈。<br>
+      <b>进入 <code>refunded</code> 时一并触发环境回收</b>(KDM 编排,"停用→保留期→销毁"):合规拒绝时环境未建无需回收;履约失败清理半成品;开通后退款则 SUBSCRIPTION→canceled、TENANT 生产+沙箱 suspended→保留期(默认 30 天,只读供导出)→terminated(删/匿名化)、SEAT→revoked、增购点数 POINT_LEDGER 写 revoke 清零、退订 Stripe 订阅防再扣、发票红冲、写 ORDER_EVENT+AUDIT_LOG+退款确认通知。详见数据模型 REFUND 说明。</div>
+  </div>
+
+  <!-- 每个状态页 -->
+  <div class="card">
+    <h2><span class="ic">▤</span>各状态:展示什么 + 引导什么</h2>
+    <table>
+      <tr><th style="width:150px">状态</th><th>展示内容</th><th>主操作 → 去向</th><th>次操作</th></tr>
+
+      <tr>
+        <td><span class="st s-pending">pending_payment</span><span class="tag t-page">页</span></td>
+        <td>订单号、配置摘要、税前金额、<b>14天倒计时</b>、已发恢复链接到邮箱</td>
+        <td><b>继续支付</b> → Stripe 收银台</td>
+        <td>稍后再说(离开,留单 pending)<br>取消订单(确认)→ <code>cancelled</code></td>
+      </tr>
+
+      <tr>
+        <td>payment_failed<span class="tag t-page">页</span><br><span style="font-size:10px;color:var(--muted)">(pending 下的提示)</span></td>
+        <td><b>明确"未扣款"</b>、失败原因、金额</td>
+        <td><b>重试支付</b> → 回收银台(换卡/FPX/钱包)</td>
+        <td>返回(订单仍 pending,14天内可再来)</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-review">under_review</span><span class="tag t-page">页</span></td>
+        <td><b>已收款确认</b>、"正在确认订单,通常几分钟"、订单号。<br><b>措辞中性</b>:不暴露"风控/制裁"字样</td>
+        <td>无客户操作(等待)。"完成后邮件通知"</td>
+        <td>—(多数订单秒过,客户可能看不到此页)</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-bad">rejected</span><span class="tag t-page">页</span></td>
+        <td>"无法在你的地区/为该账户提供服务"(<b>不解释具体制裁原因</b>)、<b>款项将全额退回</b>、客服</td>
+        <td><b>联系客服</b></td>
+        <td>—</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-prov">provisioning</span><span class="tag t-page">页</span></td>
+        <td>转圈 + "正在准备你的生产/沙箱环境,通常不到1分钟"</td>
+        <td>无(自动跳 completed)</td>
+        <td>—</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-bad">activation_failed</span><span class="tag t-page">页</span></td>
+        <td><b>款已收但开通遇到问题</b>、团队已介入、<b>会补开或全额退款</b>、订单号、客服</td>
+        <td><b>联系客服</b></td>
+        <td>查看订单</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-active">completed</span><span class="tag t-page">页</span></td>
+        <td>✓ 成功、<b>生产/沙箱两个入口</b>、发票&登录已发邮箱</td>
+        <td><b>进入生产环境</b></td>
+        <td>进沙箱 / 管理订阅</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-end">cancelled</span><span class="tag t-bg">后台/邮件</span></td>
+        <td>订单详情显示"已取消"</td>
+        <td>重新下单</td>
+        <td>—</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-end">closed</span><span class="tag t-bg">后台/邮件</span></td>
+        <td>再次打开旧链接时:"订单已过期,请重新下单"</td>
+        <td>重新下单</td>
+        <td>—</td>
+      </tr>
+
+      <tr>
+        <td><span class="st s-end">refunded</span><span class="tag t-bg">后台/邮件</span></td>
+        <td>管理后台订单详情显示"已退款 + 金额 + 退回方式"</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+    </table>
+    <div class="note"><span class="tag t-page">页</span> = 需要做成购买流程中的状态页;<span class="tag t-bg">后台/邮件</span> = 在管理后台/邮件体现,不做独立购买页。</div>
+  </div>
+
+  <!-- 统一订单信息块 -->
+  <div class="card">
+    <h2><span class="ic">▣</span>统一"订单信息块"(所有状态页复用)</h2>
+    <div class="pageblock" style="margin-bottom:10px">每个状态页都用同一个订单信息块,保证一致、避免各写一套。基础 4 字段恒有,按状态增减附加行。</div>
+    <table>
+      <tr><th>字段</th><th>所有页</th><th>取值/来源</th></tr>
+      <tr><td>订单编号 Order no.</td><td>✓ 恒有</td><td>ORDER.id(对外号 LG-OS-…)</td></tr>
+      <tr><td>下单时间 Created</td><td>✓ 恒有</td><td>ORDER.created_at · <b>马来时间 GMT+8</b> · <code>YYYY-MM-DD HH:mm (GMT+8)</code></td></tr>
+      <tr><td>购买内容 Items</td><td>✓ 恒有</td><td>版本 + 席位 × 周期(+ 增购点数)</td></tr>
+      <tr><td>金额(不含税) Subtotal</td><td>✓ 恒有</td><td>ORDER.amount_subtotal · USD · pre-tax</td></tr>
+      <tr><td colspan="3" style="background:#FAFAFE;font-weight:700;color:#475569">↓ 按状态附加</td></tr>
+      <tr><td>有效期 Reserved until</td><td>仅 pending_payment</td><td>expires_at(GMT+8)+ 剩余天数</td></tr>
+      <tr><td>失败原因 Reason</td><td>仅 payment_failed</td><td>Stripe 返回 + "未扣款"提示</td></tr>
+      <tr><td>已付 Paid(含税)</td><td>已付款类:under_review / completed / activation_failed / rejected</td><td>ORDER.amount_total · <b>Stripe 回传含税实付</b></td></tr>
+      <tr><td>服务期 Term</td><td>仅 completed</td><td>start → end(GMT+8 日期)</td></tr>
+      <tr><td>退款 Refund</td><td>rejected / activation_failed → refunded</td><td>退款状态/金额/原路</td></tr>
+    </table>
+    <div class="note"><b>金额规则:</b>未付款状态(pending/payment_failed)只显示"不含税小计";已付款后的状态额外显示 <b>"Paid = Stripe 回传的含税实付"</b>。前端永不自算税。<br><b>时区规则:</b>所有时间<b>存 UTC</b>、<b>对客户展示马来时间 GMT+8 并显式标注</b>(法律/开票/对账口径统一以马来时间为准)。</div>
+  </div>
+
+  <!-- 开发要点 -->
+  <div class="card">
+    <h2><span class="ic">⚙</span>开发落地要点</h2>
+    <ul style="list-style:none">
+      <li class="pageblock">• <b>建单时机</b>:点 "Continue to payment" 即建 <code>pending_payment</code> 订单 + 落同意存证(谁/时间/协议版本/IP),再创建 Stripe Checkout Session。</li>
+      <li class="pageblock">• <b>有效期</b>:<code>pending_payment</code> 起算 14 天,定时任务到期置 <code>closed</code>。</li>
+      <li class="pageblock">• <b>开通由 Webhook 驱动</b>:<code>checkout.session.completed</code> → 进 <code>under_review</code> → 过风控闸 → <code>provisioning</code> → <code>completed</code>。Webhook 幂等。</li>
+      <li class="pageblock">• <b>已付款的异常都要给退款出口</b>:<code>rejected</code> 与 <code>activation_failed</code> 必须明确告知"款项退回",避免"钱付了没东西"的投诉/拒付。</li>
+      <li class="pageblock">• <b>under_review 措辞</b>:对客户中性("Confirming your order"),不显示"制裁/风控"等内部术语。</li>
+      <li class="pageblock">• <b>cancelled vs closed</b> 分开存,用于区分主动取消与超时流失的运营分析。</li>
+    </ul>
+  </div>
+
+  <p style="text-align:center;color:var(--muted);font-size:12px">已与业务确认 · 作为开发依据 · 配合 lingee-overseas.html(原型)、lingee-architecture.html(架构/时序)</p>
+</div>
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', securityLevel:'loose',
+    themeVariables:{ fontFamily:"-apple-system,'PingFang SC',sans-serif", fontSize:'12px' } });
+</script>
+</body>
+</html>

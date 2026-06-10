@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee 海外购买 · 数据模型(v2)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#6C5CE7;--ink:#21242F;--muted:#6B7080;--line:#E7E8F0;--bg:#F4F3FB;--card:#fff;--key:#C026D3;--fk:#0EA5E9}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:13.5px;margin:8px 0 14px;max-width:900px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-bottom:24px;box-shadow:0 6px 22px rgba(76,60,180,.06)}
+.card h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.card h2 .tag{font-size:11px;font-weight:700;color:var(--pri);background:#F0EEFC;border-radius:6px;padding:2px 9px;margin-left:8px}
+.card .sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.mermaid{width:100%;overflow-x:auto;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #F0F0F6;vertical-align:top}
+th{background:#FAFAFE;font-weight:700;color:#475569}
+td code{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-size:11.5px;font-family:'SF Mono',Menlo,monospace}
+.pk{color:var(--key);font-weight:700;font-size:10.5px;border:1px solid #F0ABFC;border-radius:5px;padding:1px 6px;background:#FDF4FF}
+.fk{color:var(--fk);font-weight:700;font-size:10.5px;border:1px solid #BAE6FD;border-radius:5px;padding:1px 6px;background:#F0F9FF}
+.req{color:#DC2626;font-weight:700}
+.tname{font-size:15px;font-weight:800;margin:24px 0 2px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.tname:first-of-type{margin-top:6px}
+.tname .cn{font-size:12px;font-weight:500;color:var(--muted)}
+.sot{font-size:10px;font-weight:700;border-radius:5px;padding:2px 8px}
+.sot-l{background:#ECFDF3;color:#166534;border:1px solid #86EFAC}
+.sot-s{background:#EEEDFF;color:#4338CA;border:1px solid #C7CBF5}
+.sot-e{background:#FFF4E6;color:#9A3412;border:1px solid #FDBA74}
+.tdesc{font-size:12px;color:var(--muted);margin-bottom:8px}
+.note{font-size:12px;color:var(--muted);background:#FAFAFE;border:1px dashed var(--line);border-radius:10px;padding:12px 15px;margin-top:16px}
+.note b{color:var(--ink)}
+.note.green{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+.badge{font-size:10px;font-weight:700;border-radius:5px;padding:1px 7px}
+.b-cmp{background:#FFF4E6;color:#9A5200;border:1px solid #FDBA74}
+.b-money{background:#ECFDF3;color:#14532D;border:1px solid #86EFAC}
+.enum{color:#7C3AED;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lingee 海外购买 · 数据模型 v2</h1>
+  <p class="lead">围绕"下单→收款→自动开通→合规"。每个实体标注<b>主数据源(SoT)</b>:谁是权威。<code>PK</code>主键 <code>FK</code>外键 <span class="req">*</span>必填,<span class="enum">枚举值</span>已穷举。</p>
+  <div class="note green" style="margin-top:0">
+    <b>主数据源原则:</b><span class="sot sot-l">灵基</span> 灵基商业化后台是产品/订单/订阅/席位/点数/权益的<b>权威源</b>;<span class="sot sot-s">Stripe</span> 是支付执行层(支付结果/税额/结算回传以它为准);<span class="sot sot-e">外部</span> 如 LHDN。两边以 <code>stripe_*_id</code> 映射,Webhook + 定时对账保持一致。<b>下单展示用灵基自己的目录,不实时查 Stripe。</b>
+  </div>
+
+  <!-- ER -->
+  <div class="card">
+    <h2>1 · 实体关系图 <span class="tag">v2</span></h2>
+    <div class="sub">商品域(PRODUCT/SKU)· 客户域 · 订单域(ORDER/ITEM/PAYMENT/EVENT)· 履约域 · 财税合规域 · 集成域</div>
+    <div class="mermaid">
+erDiagram
+  PRODUCT ||--o{ SKU : "含多个SKU"
+  CONTACT }o--|| ACCOUNT : "隶属"
+  ACCOUNT ||--o{ LEAD : "产生线索"
+  LEAD ||--o| OPPORTUNITY : "鉴定为商机"
+  OPPORTUNITY ||--o| ORDER : "赢单转订单"
+  ACCOUNT ||--o{ OPPORTUNITY : "跟进商机"
+  SKU ||--o{ ORDER_ITEM : "被下单为"
+  ACCOUNT ||--o{ ORDER : "下单"
+  ACCOUNT ||--o{ SUBSCRIPTION : "拥有订阅"
+  ACCOUNT ||--o{ CONSENT_LOG : "同意存证"
+  ORDER ||--o{ ORDER_ITEM : "含订单行"
+  ORDER ||--o{ PAYMENT : "发起支付"
+  PAYMENT ||--o{ REFUND : "退款"
+  PAYMENT ||--o{ DISPUTE : "拒付"
+  ORDER ||--o{ ORDER_EVENT : "状态历史"
+  SUBSCRIPTION ||--o{ ORDER : "累积订单(新购/增购/续费)"
+  ORDER ||--o{ INVOICE : "开票"
+  ORDER ||--o{ COMPLIANCE_CHECK : "合规筛查"
+  SUBSCRIPTION ||--o{ TENANT : "开通租户"
+  SUBSCRIPTION ||--o{ SEAT : "分配席位"
+  SUBSCRIPTION ||--o{ POINT_LEDGER : "点数流水"
+  INVOICE ||--o| EINVOICE_SUBMISSION : "上报MyInvois"
+  ORDER ||--o{ WEBHOOK_EVENT : "事件驱动"
+  ACCOUNT ||--o{ SUPPORT_REQUEST : "售后工单"
+  SUBSCRIPTION ||--o{ SUPPORT_REQUEST : "按权益关联"
+  SUPPORT_REQUEST ||--o{ MESSAGE_LOG : "工单消息流(归类自总账)"
+  ACCOUNT ||--o{ MESSAGE_LOG : "收发消息"
+  MESSAGE_LOG ||--o{ MESSAGE_LINK : "多态关联(订单/发票/工单…)"
+
+  PRODUCT { uuid id PK
+    string code
+    string type }
+  SKU { uuid id PK
+    uuid product_id FK
+    string billing_type
+    int unit_price
+    string stripe_price_id }
+  ACCOUNT { uuid id PK
+    string legal_name
+    string country_code
+    string lifecycle_stage
+    string kingdee_tid
+    string stripe_customer_id }
+  CONTACT { uuid id PK
+    uuid account_id FK
+    string name
+    string email }
+  LEAD { uuid id PK
+    string source
+    string status
+    int expected_seats }
+  OPPORTUNITY { uuid id PK
+    uuid account_id FK
+    string stage
+    int amount }
+  ORDER { uuid id PK
+    string order_no
+    string order_type
+    uuid subscription_id FK
+    string status
+    int amount_subtotal }
+  ORDER_ITEM { uuid id PK
+    uuid order_id FK
+    uuid sku_id FK
+    int quantity }
+  PAYMENT { uuid id PK
+    uuid order_id FK
+    string status
+    string stripe_pi_id }
+  REFUND { uuid id PK
+    uuid payment_id FK
+    int amount
+    string status }
+  DISPUTE { uuid id PK
+    uuid payment_id FK
+    string status }
+  ORDER_EVENT { uuid id PK
+    uuid order_id FK
+    string to_status }
+  SUBSCRIPTION { uuid id PK
+    uuid order_id FK
+    string kingdee_sn
+    string stripe_sub_id }
+  TENANT { uuid id PK
+    string type }
+  SEAT { uuid id PK
+    string assignee_email }
+  POINT_LEDGER { uuid id PK
+    string entry_type
+    int amount }
+  INVOICE { uuid id PK
+    int tax_amount }
+  EINVOICE_SUBMISSION { uuid id PK
+    string myinvois_uuid }
+  CONSENT_LOG { uuid id PK
+    string doc_version }
+  COMPLIANCE_CHECK { uuid id PK
+    string result }
+  WEBHOOK_EVENT { uuid id PK
+    string stripe_event_id }
+  SUPPORT_REQUEST { uuid id PK
+    uuid account_id FK
+    uuid subscription_id FK
+    string topic
+    string queue
+    string priority
+    string status }
+  SUPPORT_MESSAGE { uuid id PK
+    uuid ticket_id FK
+    string sender_type
+    text body }
+  MESSAGE_LOG { uuid id PK
+    string direction
+    string channel
+    string category
+    uuid account_id FK
+    string routing_status
+    text body }
+  MESSAGE_LINK { uuid id PK
+    uuid message_id FK
+    string entity_type
+    uuid entity_id
+    string linked_by }
+    </div>
+    <div class="note"><b>实体中英对照(图中框名 = 英文,供与开发/字段表对齐;关系连线已用中文):</b><br>
+      PRODUCT 产品 · SKU 可售变体 · ACCOUNT 客户(企业)· CONTACT 联系人 · LEAD 线索 · OPPORTUNITY 商机 · ORDER 订单 · ORDER_ITEM 订单行 · PAYMENT 支付(=Stripe PaymentIntent)· REFUND 退款 · DISPUTE 拒付 · ORDER_EVENT 订单状态历史 · SUBSCRIPTION 订阅 · TENANT 租户 · SEAT 席位 · POINT_LEDGER 点数账本 · INVOICE 发票 · EINVOICE_SUBMISSION MyInvois上报 · CONSENT_LOG 同意存证 · COMPLIANCE_CHECK 合规筛查 · WEBHOOK_EVENT Stripe事件 · NOTIFICATION 通知记录 · SUPPORT_REQUEST 支持工单(售后)· SUPPORT_MESSAGE 工单消息 · MESSAGE_LOG 收发消息总账 · MESSAGE_LINK 消息关联(多态)· APPROVAL 审批记录 · AUDIT_LOG 操作审计。
+      <br><span style="color:var(--muted)">本图给产品看"实体间关系"(谁和谁、一对多);物理表名/字段类型/索引由开发设计。下面各域是字段级定义。</span></div>
+  </div>
+
+  <!-- 商品域 -->
+  <div class="card">
+    <h2>2 · 商品域</h2>
+    <div class="sub">产品(概念)与 SKU(可售变体 + 价格 + <b>销售内容</b>)分离。订单引用 SKU,不存 edition 枚举。<b>购买页的名称/描述/价格/约束/依赖/话术全部从 SKU 读,前端不写死</b>(LBC 统管)。</div>
+
+    <div class="tname">PRODUCT <span class="cn">· 产品(概念层)</span> <span class="sot sot-l">SoT 灵基 → 同步 Stripe Product</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>code</td><td><code>string</code></td><td class="req">*</td><td>LINGEE_PRO(专业版)/ LINGEE_ULTRA(高级版)/ LINGEE_UNIT(点数包)</td></tr>
+      <tr><td>name</td><td><code>string</code></td><td class="req">*</td><td>展示名(中英):灵基专业版 / Lingee Professional 等</td></tr>
+      <tr><td>type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">subscription</span>(订阅)/ <span class="enum">addon</span>(增购点数)</td></tr>
+      <tr><td>edition_tier</td><td><code>enum</code></td><td></td><td><span class="enum">professional</span> / <span class="enum">premium</span> / <span class="enum">null</span>(点数无版本)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">active</span> / <span class="enum">inactive</span></td></tr>
+      <tr><td>stripe_product_id</td><td><code>string</code></td><td></td><td>映射 Stripe Product(如 prod_UevXhqCeiUeH4C;其下挂月付/年付/点数三个 Stripe Price)</td></tr>
+    </table>
+
+    <div class="tname">SKU <span class="cn">· 可售变体 + 价格 + 销售内容</span> <span class="sot sot-l">SoT 灵基(LBC 统管)→ 同步 Stripe Price</span></div>
+    <div class="tdesc">一个产品多个 SKU:Professional 月付 / 年付 / 点数包 / Premium 面议。<b>SKU 是可售与展示的最小单元——价格、约束、销售内容、交付要点都挂在 SKU 上</b>;购买页从 SKU 渲染,前端不写死。字段非全必填(面议 SKU 可无价、增购可无依赖等)。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td><span class="fk">FK</span> product_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属产品</td></tr>
+      <tr><td>code</td><td><code>string</code></td><td class="req">*</td><td><b>SKU 编码</b>:LINGEE_PRO / LINGEE_ULTRA / LINGEE_UNIT(<b>一产品一编码,计费周期月/年是 SKU 内选项不单列</b>——下游系统按产品编码识别)</td></tr>
+      <tr><td>name_i18n</td><td><code>json</code></td><td class="req">*</td><td><b>SKU 名称</b>(中英)如 "灵基专业版 / Lingee Professional"</td></tr>
+      <tr><td>description_i18n</td><td><code>json</code></td><td></td><td><b>描述</b>(中英)</td></tr>
+      <tr><td>billing_type / interval</td><td><code>enum</code></td><td></td><td><span class="enum">recurring</span>(订阅,month/year)/ <span class="enum">one_time</span>(一次性)/ <span class="enum">quote</span>(面议,无固定价)</td></tr>
+      <tr><td>list_price / currency</td><td><code>int / char(3)</code></td><td></td><td><span class="badge b-money">资金</span> <b>目录价</b>(分);<span class="enum">USD</span>(展示/扣款)。<b>面议 SKU 可空</b>(按单定价)</td></tr>
+      <tr><td>min_qty / step_qty</td><td><code>int</code></td><td></td><td><b>最小 / 步长</b>:Pro 最小 5 席;点数最小 10000 步进 10000</td></tr>
+      <tr><td>quote_notes_i18n</td><td><code>json</code></td><td></td><td><b>报价说明</b>:折扣档/底价/审批门槛(面议或折扣用)</td></tr>
+      <tr><td>dep_hard</td><td><code>json[]</code></td><td></td><td><b>强依赖(必须成立)</b>:Units 需活跃订阅。校验/开通时强制</td></tr>
+      <tr><td>dep_scenario_i18n</td><td><code>json[]</code></td><td></td><td><b>场景依赖(推荐,非强制)</b>:如"重度沙箱用户 → 建议加购 Units"。用于交叉推荐</td></tr>
+      <tr><td>sales_pitch_i18n</td><td><code>json</code></td><td></td><td><b>销售话术</b>(销售/客服参考,可不上购买页)</td></tr>
+      <tr><td>product_intro_i18n</td><td><code>json</code></td><td></td><td><b>产品介绍</b>(购买页展示的卖点/功能文案)</td></tr>
+      <tr><td>delivery_notes_i18n</td><td><code>json</code></td><td></td><td><b>交付要点</b>:给 KDM 开通的提示(建几个租户、赠送规则等)</td></tr>
+      <tr><td>stripe_price_id</td><td><code>string</code></td><td></td><td>映射 Stripe Price(下单用;面议 SKU 可空,赢单时按定制价生成)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">active</span> / <span class="enum">quote_based</span>(面议)/ <span class="enum">archived</span>(对新购隐藏、保留存量)</td></tr>
+      <tr><td>content_version</td><td><code>int</code></td><td></td><td>内容版本号(改文案/价生成新版、可审计;已售订单保留价格快照,不追改)</td></tr>
+    </table>
+    <div class="note"><b>LBC 统管 SKU:</b>价格、约束(最小/步长)、依赖(强/场景)、销售话术、产品介绍、交付要点都在 SKU 上,购买页从此渲染、<b>前端不写死</b>。<b>字段非全必填</b>:面议 SKU 无目录价/无 stripe_price_id(赢单时定制);增购 SKU 有强依赖(需活跃订阅)无场景依赖亦可。<b>赠送点数</b>(500/席/月)是随订阅的 KDM 权益、<b>不是 SKU</b>。Premium=面议 SKU(<code>billing_type=quote</code>),销售经「商机」开定制 Stripe 发票。</div>
+  </div>
+
+  <!-- 销售域 -->
+  <div class="card">
+    <h2>3 · 销售域(线索 → 商机 → 订单)<span class="tag">新增</span></h2>
+    <div class="sub">自助购买(Professional)不经过本域,直接建 ACCOUNT + ORDER。Premium / 大客户面议从这里走:Contact Sales 提交 → LEAD → 鉴定合格 → OPPORTUNITY → 赢单付款 → 才转成 ORDER。<br><b>三入口(层级=最长路径,非强制):</b>① 自助 → 直接 ORDER;② 销售直接建 OPPORTUNITY(lead_id 可空,大客户线下谈来);③ 线索逐层 LEAD→OPPORTUNITY→ORDER。任一层可作起点,不可回退,均先归并到同一 ACCOUNT。</div>
+
+    <div class="tname">LEAD <span class="cn">· 销售线索(未鉴定的兴趣)</span> <span class="sot sot-l">SoT 灵基(或对接 CRM)</span></div>
+    <div class="tdesc">承接 Premium「Contact Sales」表单与市场留资。<b>一条线索可能成交也可能是无效咨询</b>,先由销售跟进鉴定。此时<b>还没有 ORDER</b>。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>source</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">website_contact</span>(官网询价)/ <span class="enum">in_product_contact</span>(产品内询价·PQL)/ <span class="enum">free_trial_signup</span>(申请试用)/ <span class="enum">volume</span> / <span class="enum">marketing</span> / <span class="enum">referral</span></td></tr>
+      <tr><td>contact_name / business_email / phone</td><td><code>string</code></td><td class="req">*</td><td>表单字段:姓名 / 工作邮箱 / 电话</td></tr>
+      <tr><td>company_name / country_code</td><td><code>string</code></td><td class="req">*</td><td>公司名 / 国家</td></tr>
+      <tr><td>budget_amount / budget_currency</td><td><code>int / char(3)</code></td><td></td><td><span class="badge b-money">资金</span> 预算(分);币种默认 <span class="enum">USD</span>/年</td></tr>
+      <tr><td>expected_seats</td><td><code>int</code></td><td></td><td>预期席位(Premium 起售 100)</td></tr>
+      <tr><td>lead_score / score_band</td><td><code>int / enum</code></td><td></td><td><b>系统自动评分</b> 0–100;<span class="enum">hot</span> / <span class="enum">warm</span> / <span class="enum">cold</span>。Fit(规模/国家/门槛)+ Intent(来源/试用用量/问价)</td></tr>
+      <tr><td>auto_recommendation</td><td><code>enum</code></td><td></td><td><b>系统建议</b>(非终态):<span class="enum">recommend_qualify</span> / <span class="enum">needs_review</span> / <span class="enum">auto_disqualify</span>(硬规则:受限国家/低于门槛/垃圾邮箱)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">new</span> / <span class="enum">contacted</span> / <span class="enum">qualified</span>(合格)/ <span class="enum">disqualified</span>(无效)— <b>qualified 由人工确认</b></td></tr>
+      <tr><td>qualified_by / qualified_at</td><td><code>string / timestamp</code></td><td></td><td>谁在何时鉴定合格(人工背责;auto_disqualify 可记 system)</td></tr>
+      <tr><td>account_id / contact_id</td><td><code>uuid</code></td><td></td><td><b>归并</b>到已有 ACCOUNT/CONTACT(按 email/域名/公司去重),非每次新建</td></tr>
+      <tr><td>owner / created_at</td><td><code>string / timestamp</code></td><td class="req">*</td><td>跟进销售 / 创建时间(UTC)</td></tr>
+    </table>
+    <div class="note"><b>线索→商机:自动评分 + 人工确认(混合)。</b>系统自动算 <code>lead_score</code> 并给 <code>auto_recommendation</code>:硬规则不合格的(受限国家/低于 Premium 门槛/垃圾邮箱)直接 <code>disqualified</code> 不打扰销售;高分推到待办顶部并预分派 owner。但<b>升级为 OPPORTUNITY 必须人工点「Qualify」</b>——因为商机要进销售预测、要有人背责任,购买意向(预算/决策权/时机)是软信号,机器判断不可靠。<b>原则:机器降噪+排序+建议,人拍板。</b><br><b>试用申请特例:</b><code>free_trial_signup</code> 建 ACCOUNT(<code>prospect</code>)+ 免费试用租户 + 本条 LEAD,<b>不建订单、不自动成商机</b>;出现购买信号(用量达标/主动问价/产品内 Contact Sales)才人工鉴定升级。</div>
+
+    <div class="tname">OPPORTUNITY <span class="cn">· 商机(已确认的交易机会)</span> <span class="sot sot-l">SoT 灵基(或对接 CRM)</span></div>
+    <div class="tdesc">线索被鉴定为<b>真实购买意向</b>后升级而来。商机才进<b>销售预测</b>;赢单付款后<b>转成 ORDER</b>(此刻进订单状态机)。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td><span class="fk">FK</span> account_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属公司</td></tr>
+      <tr><td><span class="fk">FK</span> lead_id</td><td><code>uuid</code></td><td></td><td>来源线索(可空:大客户可直接建商机)</td></tr>
+      <tr><td>stage</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">qualifying</span> / <span class="enum">quoting</span>(报价)/ <span class="enum">negotiation</span> / <span class="enum">won</span> / <span class="enum">lost</span></td></tr>
+      <tr><td>amount / currency</td><td><code>int / char(3)</code></td><td></td><td><span class="badge b-money">资金</span> 预期合同额(分)/ USD</td></tr>
+      <tr><td>expected_seats / expected_close</td><td><code>int / date</code></td><td></td><td>预期席位 / 预计成交日(做预测)</td></tr>
+      <tr><td>stripe_invoice_id</td><td><code>string</code></td><td></td><td>赢单时生成的定制 Stripe 发票(quote-to-cash)</td></tr>
+      <tr><td>order_id</td><td><code>uuid</code></td><td></td><td>赢单付款后转成的 ORDER(回填)</td></tr>
+      <tr><td>owner / created_at</td><td><code>string / timestamp</code></td><td class="req">*</td><td>负责销售 / 创建时间</td></tr>
+    </table>
+
+    <div class="tname">CONTACT <span class="cn">· 联系人(人,挂在公司下)</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc">一个 ACCOUNT 可有多个联系人(下单人 / CFO / IT 管理员)。把"人"从"公司"里拆出来,避免 ACCOUNT 上塞死单一联系人。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> account_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属公司</td></tr>
+      <tr><td>name / email / phone</td><td><code>string</code></td><td class="req">*</td><td>姓名 / 邮箱 / 电话</td></tr>
+      <tr><td>role</td><td><code>enum</code></td><td></td><td><span class="enum">buyer</span>(下单人)/ <span class="enum">billing</span> / <span class="enum">admin</span> / <span class="enum">other</span></td></tr>
+      <tr><td>is_primary</td><td><code>bool</code></td><td></td><td>是否主联系人</td></tr>
+    </table>
+    <div class="note green"><b>客户管理不分两张表:</b>用 ACCOUNT 的 <code>lifecycle_stage</code> 串起同一公司全生命周期。意向期靠 LEAD/OPPORTUNITY 跟进,成交后靠 ORDER/SUBSCRIPTION 运营,档案连续不割裂。<br><b>⚠️ 区分两个维度(关键):</b>① <b>生命周期状态</b>(挂 ACCOUNT,互斥唯一,描述"现在是什么")—— <span class="enum">prospect</span>意向 / <span class="enum">active</span>活跃 / <span class="enum">past_due</span>逾期 / <span class="enum">churned</span>流失 / <span class="enum">suspended</span>停用;② <b>收入动作</b>(挂 ORDER 的 <code>order_type</code>,描述"这笔单是哪种增长")—— <span class="enum">new_business</span>新购 / <span class="enum">expansion</span>增购 / <span class="enum">renewal</span>续费 / <span class="enum">contraction</span>减配。<b>"增购/续费"是动作不是状态</b>——客户增购时状态仍是 active。"赢回"= churned 账户再下单 → 状态回 active、动作记 new_business,无需单设状态。</div>
+  </div>
+
+  <!-- 客户域 -->
+  <div class="card">
+    <h2>4 · 客户域</h2>
+    <div class="tname">ACCOUNT <span class="cn">· 购买主体(企业)</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc">只存<b>稳定的身份 + 关系/状态 + 映射</b>;订单/发票/点数/用量等动态数据<b>不在此存字段</b>,靠关联实体查出来拼成"客户 360"。否则字段无限膨胀、且与各实体权威源打架。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">① 身份(开票/适用法/税务/可售判定)</td></tr>
+      <tr><td>legal_name</td><td><code>string</code></td><td class="req">*</td><td>法定公司名(发票/合同抬头)</td></tr>
+      <tr><td>country_code</td><td><code>char(2)</code></td><td class="req">*</td><td><span class="badge b-cmp">合规</span> ISO 国家(税务/适用法/可售判定)</td></tr>
+      <tr><td>registration_no</td><td><code>string</code></td><td></td><td>营业登记号(马来必填,海外选填)</td></tr>
+      <tr><td>tax_id</td><td><code>string</code></td><td></td><td><span class="badge b-cmp">合规</span> SST/GST/VAT 号</td></tr>
+      <tr><td>tax_status</td><td><code>enum</code></td><td></td><td><span class="enum">domestic_sst</span> / <span class="enum">export_zero_rated</span></td></tr>
+      <tr><td>billing_address</td><td><code>json</code></td><td></td><td>账单地址(由 Stripe 收银台收集后回写)</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">② 关系 / 状态</td></tr>
+      <tr><td>lifecycle_stage</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">prospect</span>(意向)/ <span class="enum">active</span>(活跃)/ <span class="enum">past_due</span>(逾期)/ <span class="enum">churned</span>(流失)/ <span class="enum">suspended</span>(合规停用)</td></tr>
+      <tr><td>primary_contact</td><td><code>uuid</code></td><td></td><td>主联系人(指向 CONTACT;授权代表/同意主体)</td></tr>
+      <tr><td>owner</td><td><code>string</code></td><td></td><td>客户负责人(销售/客户成功;自助客户可空)</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">③ 映射(对账/续费/退款)</td></tr>
+      <tr><td>stripe_customer_id</td><td><code>string</code></td><td></td><td>映射 Stripe Customer</td></tr>
+      <tr><td>kingdee_tid</td><td><code>string</code></td><td></td><td><b>金蝶 KBC/ERP 客户主数据标识(TID)</b>。KBC 是客户与合同的财务权威台账;开通租户前必须对齐 TID(防"线下新购 + 线上增购各开一个租户")。匹配链:① 已绑定 TID 直接命中 → ② 马来用 <code>registration_no/tax_id</code>、海外用 税号→公司域名 降级 → ③ 模糊转人工。命中则复用 KBC 已有 TID,不存在则 KBC 建客户回传新 TID。prospect 阶段可空,开通前回填</td></tr>
+      <tr><td>dedup_status</td><td><code>enum</code></td><td></td><td><b>客户查重状态</b>:<span class="enum">matched</span>(已对齐 TID)/ <span class="enum">new</span>(KBC 新建)/ <span class="enum">manual_review</span>(模糊,待人工合并)/ <span class="enum">pending</span>(KBC 未响应,待重试)</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">④ 聚合视图(不存字段,关联查出)</td></tr>
+      <tr><td><i>orders / subscriptions / invoices / points / usage / compliance</i></td><td><code>—</code></td><td></td><td>由 ORDER / SUBSCRIPTION / INVOICE / POINT_LEDGER(KDM)等关联查询拼成"客户 360",<b>不在 ACCOUNT 落字段</b></td></tr>
+    </table>
+  </div>
+
+
+  <!-- 订单域 -->
+  <div class="card">
+    <h2>5 · 订单域(核心)</h2>
+
+    <div class="tname">ORDER <span class="cn">· 订单</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc">交易主实体。金额/税额/结算额来自 Stripe 回传。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>order_no</td><td><code>string</code></td><td class="req">*</td><td>对外号 LG-OS-YYYYMMDD-xxxx</td></tr>
+      <tr><td><span class="fk">FK</span> account_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属客户(版本/席位/周期由 ORDER_ITEM 的 SKU 决定)</td></tr>
+      <tr><td><span class="fk">FK</span> subscription_id</td><td><code>uuid</code></td><td></td><td>所属订阅(<b>一个订阅累积多笔订单</b>:新购订单在订阅建成前为空、建成后回填;增购/续费下单即指向已有订阅)。后台「历史订单」即按此查询</td></tr>
+      <tr><td>order_type</td><td><code>enum</code></td><td class="req">*</td><td><b>收入动作</b>:<span class="enum">new_business</span>(新购)/ <span class="enum">expansion</span>(增购:加席位/点数/升版)/ <span class="enum">renewal</span>(续费)/ <span class="enum">contraction</span>(减配)。用于收入分析(NRR/扩展率),<b>与客户状态正交</b>。<br><b>履约差异(关键):只有 <span class="enum">new_business</span> 会"新建租户"</b>——其余三类都作用在<b>已有租户</b>上:<span class="enum">expansion</span> 在已有租户上加席位/加点数/升版(经对齐闸挂到已有 SN,不另开租户)、<span class="enum">renewal</span> 仅延长服务期(近乎纯计费)、<span class="enum">contraction</span> 回收席位/降权益(通常下周期生效)。所以四类<b>都要走履约层(KDM)落实权益变更,但只有新购独有"建租户"这一步</b>。</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">pending_payment</span> / <span class="enum">under_review</span> / <span class="enum">provisioning</span> / <span class="enum">completed</span> / <span class="enum">rejected</span> / <span class="enum">activation_failed</span> / <span class="enum">cancelled</span> / <span class="enum">closed</span> / <span class="enum">refunded</span>。<br><b>成功终态用 <code>completed</code>(履约动作完成),非 <code>active</code></b>:<code>active</code> 属于 SUBSCRIPTION / TENANT 的生命周期(服务在线);订单四种 <code>order_type</code> 做完均置 <code>completed</code>。</td></tr>
+      <tr><td>compliance_status</td><td><code>enum</code></td><td></td><td>汇总:<span class="enum">pending</span> / <span class="enum">pass</span> / <span class="enum">blocked</span>(明细见 COMPLIANCE_CHECK)</td></tr>
+      <tr><td>close_reason</td><td><code>enum</code></td><td></td><td><span class="enum">null</span> / <span class="enum">expired</span> / <span class="enum">user_cancelled</span> / <span class="enum">rejected_compliance</span></td></tr>
+      <tr><td>amount_subtotal</td><td><code>int</code></td><td class="req">*</td><td><span class="badge b-money">资金</span> 税前合计(分);未付款页只显示此项</td></tr>
+      <tr><td>tax_amount</td><td><code>int</code></td><td></td><td><span class="badge b-money">资金</span> <span class="sot sot-s">Stripe 回传</span>,前端不算</td></tr>
+      <tr><td>amount_total</td><td><code>int</code></td><td></td><td><span class="badge b-money">资金</span> 含税实付 <span class="sot sot-s">Stripe 回传</span>;已付款页显示 Paid</td></tr>
+      <tr><td>settlement_amount_myr</td><td><code>int</code></td><td></td><td><span class="badge b-money">资金</span> 实际结算 MYR <span class="sot sot-s">Stripe payout 回传</span>(对账用)</td></tr>
+      <tr><td>stripe_checkout_session_id</td><td><code>string</code></td><td></td><td>Checkout Session</td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>下单时间(点 Continue)。<b>存 UTC,展示 GMT+8</b></td></tr>
+      <tr><td>expires_at</td><td><code>timestamp</code></td><td></td><td>= created_at + 14 天;到期定时任务置 closed</td></tr>
+      <tr><td>paid_at / activated_at / cancelled_at / closed_at / refunded_at</td><td><code>timestamp</code></td><td></td><td>各节点时间(UTC)</td></tr>
+    </table>
+
+    <div class="tname">ORDER_ITEM <span class="cn">· 订单行</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td><span class="fk">FK</span> order_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订单</td></tr>
+      <tr><td><span class="fk">FK</span> sku_id</td><td><code>uuid</code></td><td class="req">*</td><td>引用 SKU(订阅席位 / 点数包)</td></tr>
+      <tr><td>quantity</td><td><code>int</code></td><td class="req">*</td><td>席位数 或 点数</td></tr>
+      <tr><td>term_count</td><td><code>int</code></td><td></td><td>周期数(订阅行)</td></tr>
+      <tr><td>unit_price_snapshot</td><td><code>int</code></td><td class="req">*</td><td><b>下单时价格快照</b>(防 SKU 改价影响历史单)</td></tr>
+      <tr><td>line_subtotal</td><td><code>int</code></td><td class="req">*</td><td>行税前小计</td></tr>
+    </table>
+
+    <div class="tname">PAYMENT <span class="cn">· 支付流水(每条 = 一次支付尝试,= Stripe PaymentIntent 镜像)</span> <span class="sot sot-s">SoT Stripe(镜像)</span></div>
+    <div class="tdesc"><b>本实体就是 Stripe PaymentIntent 在我们这边的镜像</b>(用 <code>stripe_payment_intent_id</code> 挂住)——Stripe 是该数据 SoT,我们<b>不另建 PaymentIntent 表</b>,只存映射 id + 自己业务要用的字段(结算 MYR/汇率、对账状态、attempt_no 等)。<b>PaymentIntent</b> = "收这笔钱的全过程"(可含多次扣款 Charge、处理 3DS/SCA)。一个订单可有多条 PAYMENT(失败重试)——<code>payment_failed</code> 记在这,订单 status 仍 pending_payment。Charge 层用 <code>attempt_no</code> 折叠(B2B 一次性付款够用,如需逐笔 Charge 审计可再拆)。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">关联(对得上是谁的钱)</td></tr>
+      <tr><td><span class="fk">FK</span> order_id / account_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订单 / 购买方</td></tr>
+      <tr><td>stripe_payment_intent_id</td><td><code>string</code></td><td class="req">*</td><td>映射 Stripe PaymentIntent(<b>对账主键</b>)</td></tr>
+      <tr><td>attempt_no</td><td><code>int</code></td><td class="req">*</td><td>第几次尝试(一单可多次)</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">渠道与方式</td></tr>
+      <tr><td>channel</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">stripe</span>(当前唯一渠道)</td></tr>
+      <tr><td>method</td><td><code>enum</code></td><td></td><td><span class="enum">card</span> / <span class="enum">fpx</span> / <span class="enum">grabpay</span> / <span class="enum">applepay</span> / <span class="enum">googlepay</span> / <span class="enum">link</span></td></tr>
+      <tr><td>card_brand / card_last4</td><td><code>string</code></td><td></td><td>Stripe 回传(客服核对/对账);<b>不存完整卡号</b></td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">金额(全部 Stripe 回传,前端不算;跨境拆三口径)</td></tr>
+      <tr><td>amount_subtotal / tax_amount / amount_total</td><td><code>int</code></td><td></td><td><span class="badge b-money">资金</span> 税前 / 税额 / 含税实付(分)</td></tr>
+      <tr><td>currency</td><td><code>char(3)</code></td><td class="req">*</td><td>收款币种 <span class="enum">USD</span>(<b>presentment currency</b>=USD:客户卡按 USD 扣款;Stripe 再换汇 MYR 结算给商户)</td></tr>
+      <tr><td>settlement_gross / fee / settlement_net / settlement_currency / fx_rate</td><td><code>int / int / int / char(3) / decimal</code></td><td></td><td><span class="badge b-money">资金</span> 结算 <span class="enum">MYR</span> 三个数:<b>毛换汇</b>(含税总额×汇率)− <b>Stripe 手续费</b> = <b>净到账 payout</b>(真正打到商户银行)。汇率=Stripe 换汇当时汇率(<b>对账 / 汇兑损益</b>,TODO F7)</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">状态与失败原因</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">processing</span> / <span class="enum">succeeded</span> / <span class="enum">failed</span> / <span class="enum">canceled</span></td></tr>
+      <tr><td>failure_code / failure_reason</td><td><code>string</code></td><td></td><td>失败原因(展示"支付失败"页 + 客服排查)。<b>code 全部来自 Stripe</b>,合并两层:Stripe 错误码(<code>last_payment_error.code</code>,如 card_declined / processing_error / authentication_required)+ 发卡行拒付码(<code>decline_code</code>,如 insufficient_funds / lost_card)。枚举(不译):<span class="enum">insufficient_funds</span> / <span class="enum">card_declined</span> / <span class="enum">expired_card</span> / <span class="enum">incorrect_cvc</span> / <span class="enum">processing_error</span> / <span class="enum">authentication_required</span> / <span class="enum">fraudulent</span> / <span class="enum">lost_card</span> / <span class="enum">stolen_card</span> / <span class="enum">currency_not_supported</span>。<b>reason</b> = 后台按 code 映射的中英双语可读描述(本地化,非 Stripe 原文)。</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">退款 / 拒付 → 拆为子记录(见下方 REFUND / DISPUTE,挂本支付下)</td></tr>
+      <tr><td>refund_marker</td><td><code>enum</code></td><td></td><td><b>原流水的"已退款"标记</b>(派生自其下 REFUND 子记录,非状态变更):<span class="enum">none</span> / <span class="enum">partially_refunded</span> / <span class="enum">refunded</span>。<b>PAYMENT 行本身不可改</b>——退款只新建 REFUND 记录,原支付仍 <code>status=succeeded</code>,仅打此标记。</td></tr>
+      <tr><td colspan="4" style="background:#FAFAFE;font-weight:700;color:#475569">时间与对账</td></tr>
+      <tr><td>created_at / paid_at</td><td><code>timestamp</code></td><td class="req">*</td><td>发起时间 / 成功时间(UTC,展示 GMT+8)</td></tr>
+      <tr><td>payout_id / reconciliation_status</td><td><code>string / enum</code></td><td></td><td>归属哪笔 Stripe 打款 / <span class="enum">matched</span>·<span class="enum">variance</span>·<span class="enum">unmatched</span>(三方对账)</td></tr>
+    </table>
+    <div class="note"><b>分层(与业内对齐):</b><code>ORDER</code>(交易意图,一个)→ <code>PAYMENT</code>(支付流水,每条 = 一次支付尝试,1 对多,= Stripe <b>PaymentIntent</b>:收这笔钱的全过程,内部可含多次扣款 Charge,并处理 3DS/SCA)→ <code>REFUND</code> / <code>DISPUTE</code>(挂在对应支付下,各自独立记录)。<b>流水按"每次支付动作"走,不按订单走</b>:这样失败重试、每次原因、退款/拒付都不丢。<br>
+    <b>流水不可改(关键,回应开发疑问):</b>PAYMENT 是<b>只增不改的账本</b>。退款<b>不修改</b>原支付记录,而是<b>新增一条 REFUND 流水</b>;原 PAYMENT 仍 <code>status=succeeded</code>,只在其 <code>refund_marker</code> 上标 <code>refunded/partially_refunded</code>。所以"退款成功"绝不会把原流水改成"refunded 状态"——PAYMENT.status 永远只有 processing/succeeded/failed/canceled,退款是另一条记录。</div>
+
+    <div class="tname">REFUND <span class="cn">· 退款(支付的子记录)</span> <span class="sot sot-s">SoT Stripe(镜像)</span></div>
+    <div class="tdesc"><b>一笔支付可有多次退款</b>(部分退、多次退),每条独立——故拆为子实体,不在 PAYMENT 上汇总。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> payment_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属支付</td></tr>
+      <tr><td>stripe_refund_id</td><td><code>string</code></td><td class="req">*</td><td>映射 Stripe Refund(对账)</td></tr>
+      <tr><td>amount / currency</td><td><code>int / char(3)</code></td><td class="req">*</td><td><span class="badge b-money">资金</span> 退款金额(分)/ 币种</td></tr>
+      <tr><td>reason</td><td><code>enum</code></td><td></td><td><b>枚举(非自由文本)</b>。系统自动填:<span class="enum">compliance_rejected</span>(合规拒绝)/ <span class="enum">activation_failed</span>(开通失败);客服从下拉选:<span class="enum">pre_activation</span>(开通前取消)/ <span class="enum">duplicate</span>(重复支付)/ <span class="enum">overpayment</span>(多付/金额错)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">pending_approval</span>(开通后退款待审批)/ <span class="enum">rejected</span>(审批驳回,不退)/ <span class="enum">pending</span>(已批准/已发起,等 Stripe)/ <span class="enum">succeeded</span>(退款到账)/ <span class="enum">failed</span>(Stripe 退款失败,需重试/换方式)</td></tr>
+      <tr><td>initiated_by / approval_id</td><td><code>string / uuid</code></td><td></td><td>发起人(<span class="enum">system</span> 或客服账号)/ 开通后退款关联的 <b>APPROVAL 记录</b>(审批人、意见、结论在 APPROVAL,不在此重复)</td></tr>
+      <tr><td>source</td><td><code>enum</code></td><td class="req">*</td><td>发起源:<span class="enum">system</span>(自动)/ <span class="enum">admin</span>(后台客服发起)/ <span class="enum">customer_request</span>(客户工单申请,关联 support_request_id)</td></tr>
+      <tr><td>support_request_id</td><td><code>uuid</code></td><td></td><td>来自客户工单时关联(source=customer_request)</td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>时间(UTC)</td></tr>
+    </table>
+    <div class="note"><b>退款怎么执行(谁触发 / 自动还是人工 / 调什么 / 几天到账):</b><br>
+      <b>三个发起源:</b>① <b>系统自动</b>——合规拒绝/开通失败时系统自建 REFUND(<code>initiated_by=system</code>);② <b>后台运营发起</b>——客服在「退款与拒付」页或订单详情点"发起退款";③ <b>客户申请</b>——客户在购买页 Contact support 提工单(<code>SUPPORT_REQUEST</code>,topic=refund)→ 客服核实后转成 REFUND。<b>客户不能直接退款,只能申请;Stripe API 调用一律由后端发起。</b><br>
+      退款由<b>后端调 Stripe Refund API</b>(<code>POST /v1/refunds</code>,传 <code>payment_intent</code> + <code>amount</code>,默认原路退回原卡)——<b>不是在 Stripe 后台手动点</b>。<br>
+      ① <b>合规拒绝(compliance_rejected)/ 开通失败(activation_failed)→ 系统自动全额退</b>,无需人工:这是我方责任(没卖成 / 没交付),按协议必退,不让客户等人工。<br>
+      ② <b>开通前客户取消(pre_activation)→ 自动全额退</b>(策略允许)。<br>
+      ③ <b>开通后退款 → 必须人工审批</b>(客服发起 → 审批通过才调 API,记 <code>initiated_by/approved_by</code> 并写 AUDIT_LOG)。<br>
+      到账:Stripe 受理后 status=<code>pending</code>,退款成功回传 <code>charge.refunded</code> → 更新本记录 status=<code>succeeded</code>;<b>退回原卡通常 5–10 个工作日</b>(Stripe→发卡行时效,我方不可控,如实告知客户)。<br>
+      <b>谁通知客户:钱由 Stripe 退;给客户的退款确认邮件由 Lingee 通知服务发</b>(NOTIFICATION <code>refund_confirmation</code>,含订单/环境回收/数据删除说明)——只有我方有业务上下文。Stripe 自带的"退款收据"是纯支付层,建议关闭或仅作补充,避免与业务通知重复。</div>
+    <div class="note"><b>退款后:环境回收 + 数据联动(KDM 编排,SaaS 标准"停用→保留期→销毁",不立即物理删):</b><br>
+      退款成功(<code>charge.refunded</code>)触发回收,按场景分:<br>
+      • <b>合规拒绝(rejected)</b>:环境<b>从未建</b>(风控在开通前)→ 无需回收;仅 ORDER→refunded、写 ORDER_EVENT/通知。<br>
+      • <b>开通失败(activation_failed)</b>:可能有半成品租户 → KDM 直接清理半成品,SUBSCRIPTION→canceled。<br>
+      • <b>开通后退款</b>:走完整回收 → ① <code>SUBSCRIPTION.status=canceled</code>;② <code>TENANT</code> 生产+沙箱 <code>ready→suspended</code>(立即停登录)→ 进 <b>保留期 grace_period(默认 30 天,只读供导出/反悔)</b> → 到期 <code>terminated</code>(删除/匿名化数据,记 <code>terminated_at</code>);③ <code>SEAT.status=revoked</code>;④ <code>POINT_LEDGER</code> 写一条 <code>revoke</code> 把增购点数余额冲减至 0(赠送点数本就当月失效);⑤ 退订 <code>stripe_sub_id</code> 防再扣费;⑥ 作废/红冲对应 INVOICE(MyInvois 开 credit note);⑦ 写 <code>ORDER_EVENT</code>(refunded)+ <code>AUDIT_LOG</code>(人工退款/回收操作)+ 发 <code>refund_confirmation</code> 通知(含"数据将于 N 天后删除")。<br>
+      <b>SoT:</b>环境/点数回收在 <b>KDM</b> 执行;ORDER/退款状态在 Lingee BC;发票红冲与 ERP 冲减收入在财税侧。BC 后台只读展示回收进度。</div>
+
+    <div class="tname">DISPUTE <span class="cn">· 拒付 / 争议(支付的子记录)</span> <span class="sot sot-s">SoT Stripe(镜像)</span></div>
+    <div class="tdesc">持卡人发起的 chargeback(绕过我们直接找发卡行)。钱已被 Stripe 从账户<b>扣回</b>(连同拒付费),我们靠举证去赢回、胜诉才返还。有自己的举证流程与时限,独立记录,由 <code>charge.dispute.*</code> 事件驱动。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> payment_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属支付</td></tr>
+      <tr><td>stripe_dispute_id</td><td><code>string</code></td><td class="req">*</td><td>映射 Stripe Dispute</td></tr>
+      <tr><td>amount / currency</td><td><code>int / char(3)</code></td><td class="req">*</td><td><span class="badge b-money">资金</span> 争议金额 = 对应 PAYMENT 的<b>含税实付</b>(通常全额,也可能部分)/ 币种 = 收款币种 <span class="enum">USD</span>(非发票 MYR)。<b>以 Stripe 回传为准</b>;通过 payment_id→order_id 追到订单/客户,但金额取支付含税额、不引用订单税前价</td></tr>
+      <tr><td>dispute_fee</td><td><code>int</code></td><td></td><td><span class="badge b-money">资金</span> 拒付手续费(MYR,卡组织收)。<b>拒付创建时即扣、当场确定</b>,不必等结案;<b>无论胜负通常不退</b></td></tr>
+      <tr><td>reason</td><td><code>enum</code></td><td></td><td>Stripe 返回(持卡人/发卡行填的理由):<span class="enum">fraudulent</span>(称未授权·盗刷/不认)/ <span class="enum">product_not_received</span>(称没收到服务)/ <span class="enum">product_unacceptable</span>(称服务有问题/不符)/ <span class="enum">duplicate</span>(称重复扣款)/ <span class="enum">subscription_canceled</span>(称已取消还被扣)/ <span class="enum">credit_not_processed</span>(称该退的款没退)/ <span class="enum">unrecognized</span>(称账单上不认识这笔)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">warning_needs_response</span>(需举证)/ <span class="enum">under_review</span>(审理中)/ <span class="enum">won</span>(胜诉)/ <span class="enum">lost</span>(败诉)。<b>won/lost 为终态</b>:结案后不可再举证或申诉(唯一升级=卡组织仲裁,另一套付费流程)</td></tr>
+      <tr><td>evidence</td><td><code>json</code></td><td></td><td>举证材料包(对应提交证据弹窗的各项)。<b>系统自动带入:</b> receipt(订单收据/发票号)· consent(同意存证:协议版本+IP+时间)· activation_log(开通/使用日志)· billing_address / ip(Stripe 带入);<b>人工可选补:</b> customer_communication(客户通信/工单)· other_file(其他佐证)。映射 Stripe Dispute evidence 字段</td></tr>
+      <tr><td>evidence_submitted_at / submitted_by</td><td><code>timestamp / string</code></td><td></td><td>提交时间 / 提交人;<b>提交给 Stripe</b>(非直接给卡组织),提交后锁定、转 under_review</td></tr>
+      <tr><td>evidence_due_by / created_at / closed_at</td><td><code>timestamp</code></td><td></td><td>举证截止 / 发生时间 / 结案时间</td></tr>
+    </table>
+    <div class="note"><b>败诉(lost)后续:</b>裁决<b>终局、不可申诉</b>,钱终归客户。业务上等同一次"被动退款"→ <b>触发环境回收</b>(同 REFUND:SUBSCRIPTION canceled · TENANT 停用→销毁 · SEAT revoked · 点数清零)+ 发票红冲 + ERP 收入冲减 + 该客户标记拒付前科(后续下单风控评分升高)。<b>胜诉(won)</b>:冻结资金返还,手续费通常不退。<b>我方不直接联系客户</b>(对抗在我们↔银行之间,结果由银行通知持卡人)。</div>
+
+    <div class="tname">ORDER_EVENT <span class="cn">· 订单状态历史</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc"><b>只增不改</b>。<b>仅记订单状态流转</b>(里程碑),不是字段级 diff。用于排查/单订单时间线展示(在订单详情页),<b>不在导航单设全局页</b>。人的敏感操作审计另见集成域 AUDIT_LOG。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td><span class="fk">FK</span> order_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订单</td></tr>
+      <tr><td>from_status / to_status</td><td><code>enum</code></td><td class="req">*</td><td>同 ORDER.status 取值</td></tr>
+      <tr><td>reason</td><td><code>string</code></td><td></td><td>流转原因(如 payment_succeeded / risk_blocked / expired)</td></tr>
+      <tr><td>actor</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">system</span> / <span class="enum">customer</span> / <span class="enum">admin</span></td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>时间(UTC)</td></tr>
+    </table>
+    <div class="note"><b>何时写日志 vs 落实体:</b>有业务/法律/财务意义的状态 → 落 ORDER 字段(status/close_reason/时间戳);每次流转 → 写 ORDER_EVENT(只增不改);纯技术细节(Webhook 原始包/重试)→ 进日志系统,不进核心实体。</div>
+  </div>
+
+  <!-- 履约域 -->
+  <div class="card">
+    <h2>6 · 订阅履约域 <span class="tag">灵基 KDM</span></h2>
+    <div class="sub"><b>SoT = 灵基 KDM</b>:本域(SUBSCRIPTION / TENANT / SEAT / POINT_LEDGER)的发放、扣减、计量、过期均在 KDM 执行与存储。Lingee BC <b>仅引用与展示</b>(如订单详情看交付了什么),<b>不存权威字段、不在 BC 改</b>;点数明细查询去 KDM,故 BC 后台不单设点数账本页。<br><b>三个概念别混:</b><code>SUBSCRIPTION 订阅</code>=商务契约(买了什么版本/几席/到期);<b>权益 entitlement</b>="能用什么"的规则(版本→功能、治理模块开关、@智能体权限、点数额度),由 KDM 权益服务管;<code>TENANT 租户</code>=权益落地的容器(生产/沙箱环境)。<b>订阅≠权益≠租户:订阅定义应得权益,权益是规则,租户是场所。</b></div>
+
+    <div class="tname">SUBSCRIPTION <span class="cn">· 订阅</span> <span class="sot sot-l">SoT 灵基(+ stripe_sub_id)</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td><b>灵基自己的 id</b></td></tr>
+      <tr><td><span class="fk">FK</span> account_id / order_id</td><td><code>uuid</code></td><td class="req">*</td><td>来源订单</td></tr>
+      <tr><td><span class="fk">FK</span> product_id / sku_id</td><td><code>uuid</code></td><td class="req">*</td><td>所购产品/SKU</td></tr>
+      <tr><td>stripe_sub_id</td><td><code>string</code></td><td class="req">*</td><td><b>Stripe 那边的订阅 id</b>(两个 id 并存)</td></tr>
+      <tr><td>kingdee_sn</td><td><code>string</code></td><td></td><td><b>金蝶 KBC/ERP 合同/订阅序列号(SN)</b>。标识"这是哪一份合同",KBC 收入确认/应收按 SN 归集。开通前对齐:查到该客户(TID)名下已有对应产品的 SN → 判定<b>增购/续费</b>(挂到已有订阅与租户,不另开);无 SN → <b>新购</b>(建 SN + 建租户)。增购/续费复用同一 SN,每笔订单/发票另有 KBC 单据号</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">active</span> / <span class="enum">past_due</span> / <span class="enum">canceled</span> / <span class="enum">expired</span></td></tr>
+      <tr><td>seats</td><td><code>int</code></td><td class="req">*</td><td>席位数</td></tr>
+      <tr><td>current_period_start / end</td><td><code>date</code></td><td class="req">*</td><td>当前计费周期</td></tr>
+      <tr><td>term_end</td><td><code>date</code></td><td class="req">*</td><td>合同总到期(增购点数有效期上限)</td></tr>
+      <tr><td>auto_renew</td><td><code>bool</code></td><td></td><td>是否自动续费(镜像 Stripe 订阅的续费开关;下单时默认开,客户可在客户门户关闭)</td></tr>
+    </table>
+    <div class="note"><b>增购与续费的生效时点(正式规则):</b>同一订阅在生命周期内累积多笔订单(<code>new_business</code> 初始 + 多次 <code>expansion</code> 增购 + <code>renewal</code> 续费),共享本订阅与 <code>stripe_sub_id</code>,各自有独立的 ORDER / PAYMENT / INVOICE。<br>① <b>增购(expansion)即时生效</b>:付款后立即交付 KDM,在现有租户上加席位/补点数,随当前 <code>term_end</code> 同期到期(增购点数有效期上限 = term_end)。<br>② <b>续费(renewal)在下一周期开始日生效</b>:即便客户<b>提前续费</b>,也只是排程下一周期(类似 Stripe subscription schedule),<b>不延长当前周期</b>;钱与发票走付款日,席位/点数额度与服务期到<b>下一周期开始</b>才由 KDM 交付。<br>③ <b>席位是当前值、可变</b>:<code>seats</code> 字段存"此刻生效的席位数",随增购变化;变更轨迹由订单历史体现,本字段不留历史。</div>
+    <div class="note green"><b>权益(合同值)vs 实时用量(活数)——后台两处分开展示:</b>SUBSCRIPTION 存的是<b>合同值</b>(买了几席、本服务期几多增购点数额度、版本、服务期),是只读契约;而"<b>席位占用了几个</b>""<b>点数还剩多少</b>"是 KDM 实时计量的<b>活数</b>(席位占用见 SEAT、点数余额见 POINT_LEDGER),随使用变化。后台「权益」卡只显示合同值,「实时用量」卡显示活数(席位占用 + 增购/赠送点数余额),两者不混。<b>赠送点数不是合同权益</b>(营销赠送、非购买),只在实时用量里看余额,不进权益卡。</div>
+    <div class="note" style="background:#FFF4E6;border-color:#FDBA74"><b>⚠️ 开通前 TID/SN 对齐闸(防"开出两个租户"):</b>客户可能<b>线下(KBC/SLG)新购</b>又<b>线上(LBC/PLG)增购</b>,或反向。若开通前不对齐,会把增购误判为新购、给同一客户<b>开出两个租户</b>、权益分裂。<b>规则:任何一方在调 KDM 建租户前,必须先向 KBC(客户+合同财务权威)对齐 TID/SN。</b><br><b>两层判定:</b>① <b>入口初判</b>——产品内·试用版购买→倾向新购;产品内·正式版购买→倾向增购(已知挂哪个 SN);官网/无上下文→待定。② <b>开通前终判(权威,以此为准)</b>——用匹配链(已绑 TID → 马来 registration_no/tax_id;海外 税号→域名 → 模糊转人工)问 KBC + 查 KDM 是否已有该客户租户:已有 TID+对应产品 SN → <b>强制增购</b>(挂已有租户,不另开);完全没有 → <b>新购</b>(建 TID+SN+租户);初判与终判冲突 → <b>转人工复核</b>。<b>同客户同产品想开第二套独立订阅 → 必须人工复核确认,不自助直接开。</b><br><b>失败不死等(业内做法):</b>对齐秒过→正常开通;KBC 超时/无响应→订单转<b>待开通队列</b>(客户见"处理中"、不报错),后台自动重试/人工兜底;冲突→人工复核。对齐链路走「集成事件 → 金蝶 ERP(KBC)」,失败可重试。<b>开通(快、LBC 触发)与记账(慢、异步推 KBC)分离,记账不阻断开通。</b></div>
+
+    <div class="tname">TENANT <span class="cn">· 租户</span> <span class="sot sot-l">SoT 灵基 KDM</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> subscription_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订阅</td></tr>
+      <tr><td>type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">production</span> / <span class="enum">sandbox</span></td></tr>
+      <tr><td>url</td><td><code>string</code></td><td class="req">*</td><td>访问地址</td></tr>
+      <tr><td>region</td><td><code>string</code></td><td class="req">*</td><td><span class="badge b-cmp">合规</span> 数据驻留区域(对客户明示)</td></tr>
+      <tr><td>erp_connector</td><td><code>json</code></td><td></td><td>私有 ERP 连接(星瀚/星空)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">provisioning</span> / <span class="enum">ready</span> / <span class="enum">suspended</span>(停用·可恢复)/ <span class="enum">grace_period</span>(退款后保留期·只读待导出)/ <span class="enum">terminated</span>(已销毁·数据删除/匿名化)</td></tr>
+      <tr><td>grace_until / terminated_at</td><td><code>timestamp</code></td><td></td><td>退款回收:保留期截止 / 实际销毁时间(数据删除/匿名化)</td></tr>
+    </table>
+
+    <div class="tname">SEAT <span class="cn">· 席位</span> <span class="sot sot-l">SoT 灵基 KDM</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> subscription_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订阅</td></tr>
+      <tr><td>assignee_email</td><td><code>string</code></td><td></td><td>分配用户(空=未分配)</td></tr>
+      <tr><td>point_cap</td><td><code>int</code></td><td></td><td>个人点数额度上限(共享池内)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">active</span> / <span class="enum">unassigned</span> / <span class="enum">revoked</span></td></tr>
+    </table>
+
+    <div class="tname">POINT_LEDGER <span class="cn">· 点数流水账本</span> <span class="sot sot-l">SoT 灵基 KDM</span></div>
+    <div class="tdesc">流水式,余额由账本汇总。赠送(当月失效)与增购(随租期)分开。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> subscription_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订阅</td></tr>
+      <tr><td>entry_type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">gift_grant</span> / <span class="enum">purchase_grant</span> / <span class="enum">consume</span> / <span class="enum">expire</span> / <span class="enum">revoke</span>(退款回收:冲减余额至 0)</td></tr>
+      <tr><td>amount</td><td><code>int</code></td><td class="req">*</td><td>发放为正,消耗/过期为负</td></tr>
+      <tr><td>tenant_scope</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">production_only</span>(赠送)/ <span class="enum">both</span>(增购)</td></tr>
+      <tr><td>seat_id</td><td><code>uuid</code></td><td></td><td>分配到人时记录</td></tr>
+      <tr><td>granted_at / expires_at</td><td><code>timestamp</code></td><td class="req">*</td><td>赠送=当月底 / 增购=term_end</td></tr>
+    </table>
+  </div>
+
+  <!-- 财税合规 -->
+  <div class="card">
+    <h2>7 · 财税合规域</h2>
+
+    <div class="tname">INVOICE <span class="cn">· 发票</span> <span class="sot sot-l">灵基 + Stripe</span> <span class="badge b-money">资金</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> order_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订单</td></tr>
+      <tr><td>invoice_type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">invoice</span>(正常发票)/ <span class="enum">credit_note</span>(红冲/贷记单,退款时开,金额为负,关联原发票)</td></tr>
+      <tr><td>original_invoice_id</td><td><code>uuid</code></td><td></td><td>红冲时指向被冲销的原发票</td></tr>
+      <tr><td>seller_entity</td><td><code>string</code></td><td class="req">*</td><td><span class="badge b-cmp">合规</span> KINGDEE…(MALAYSIA) SDN. BHD.</td></tr>
+      <tr><td>tax_type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">sst_8</span> / <span class="enum">zero_rated</span></td></tr>
+      <tr><td>tax_amount / total</td><td><code>int</code></td><td class="req">*</td><td>税额 / 含税总额</td></tr>
+      <tr><td>currency / fx_rate</td><td><code>enum / decimal</code></td><td class="req">*</td><td><b>MYR 为主</b>(SST 以 MYR 向 LHDN 申报)<b>+ USD 并列</b>(客户计价币种)+ 汇率;<b>按开票日汇率</b>(LHDN 要求外币票列开票日 MYR 等值,源用 BNM 开票日参考汇率)。<b>仅报税口径,不影响资金</b>(与客户付的 USD、Stripe 结算的 MYR 是不同口径)</td></tr>
+      <tr><td>stripe_invoice_id / pdf_url</td><td><code>string</code></td><td></td><td>Stripe 发票 / PDF</td></tr>
+    </table>
+
+    <div class="tname">EINVOICE_SUBMISSION <span class="cn">· MyInvois 上报</span> <span class="sot sot-e">SoT LHDN</span> <span class="badge b-cmp">合规</span></div>
+    <div class="tdesc"><b>发票从哪开:</b>Stripe Invoicing 出底票(<code>stripe_invoice_id</code>+PDF)→ <b>但 Stripe 发票 ≠ 马来合规发票</b> → Lingee BC 把它上报 LHDN MyInvois,取回合规凭证号 + 二维码,才是法律认可的税务发票。本地标准票 / 海外 self-billed 两类。<b>红冲同理:退款时调 Stripe 开 credit note,再上报 MyInvois 取红冲凭证</b>(LHDN 这一步才是合规闭环,不是只调 Stripe)。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> invoice_id</td><td><code>uuid</code></td><td class="req">*</td><td>对应发票</td></tr>
+      <tr><td>doc_type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">standard</span>(本地)/ <span class="enum">self_billed</span>(跨境)/ <span class="enum">credit_note</span>(红冲/退款)</td></tr>
+      <tr><td>myinvois_uuid / validation_qr</td><td><code>string</code></td><td></td><td>合规凭证号 / 二维码</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">pending</span> / <span class="enum">submitted</span> / <span class="enum">validated</span> / <span class="enum">rejected</span></td></tr>
+    </table>
+
+    <div class="tname">CONSENT_LOG <span class="cn">· 同意存证</span> <span class="sot sot-l">SoT 灵基</span> <span class="badge b-cmp">合规</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> account_id / order_id</td><td><code>uuid</code></td><td class="req">*</td><td>同意主体 = 下单人(contact_name + email)</td></tr>
+      <tr><td>doc_type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">agreement</span> / <span class="enum">dpa</span> / <span class="enum">notice</span></td></tr>
+      <tr><td>doc_version</td><td><code>string</code></td><td class="req">*</td><td>协议版本号(指向版本库)</td></tr>
+      <tr><td>accepted_at / ip / user_agent</td><td><code>string</code></td><td class="req">*</td><td>时间 + IP + 浏览器(<b>不依赖 Stripe 付款姓名</b>)</td></tr>
+    </table>
+
+    <div class="tname">COMPLIANCE_CHECK <span class="cn">· 合规/风控明细</span> <span class="sot sot-l">SoT 灵基</span> <span class="badge b-cmp">合规</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> order_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属订单(一单多条检查)</td></tr>
+      <tr><td>check_type</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">sanctions</span> / <span class="enum">export_control</span> / <span class="enum">risk_score</span> / <span class="enum">tax_id</span></td></tr>
+      <tr><td>result</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">pass</span> / <span class="enum">hit</span> / <span class="enum">manual_review</span></td></tr>
+      <tr><td>provider / provider_ref</td><td><code>string</code></td><td></td><td>筛查来源 + 返回引用,<b>四类检查来源各不同</b>:<br><b>sanctions</b>(看人)= <b>当前由 Stripe 内置 OFAC 自动筛</b>(命中体现在 Stripe charge,引用 Stripe id);<br><b>export_control</b>(看货)= 出口管制分类 + 目的地/最终用途判定,<b>当前无自动服务、为人工判定</b>(provider_ref=<code>manual</code>),常需法务参与;<br><b>risk_score</b> = <b>Stripe Radar</b> 收款时自动评分,经 webhook 推送 PaymentIntent 的 <code>outcome.risk_score/risk_level</code>(引用 <code>rad_…</code>);<br><b>tax_id</b> = 格式/有效性校验(无外部引用)。<br><b>未来:</b>若启用独立第三方筛查服务,sanctions/export_control 才会带 <code>scr_…</code>/<code>exp_…</code> 服务方引用;现阶段无。</td></tr>
+      <tr><td>score / decided_by / decided_at</td><td><code>int / string / timestamp</code></td><td></td><td>风险分(risk_score 用)/ 人工放行或拦截的操作人与时间(manual_review 才有;自动 pass 记 system)</td></tr>
+    </table>
+    <div class="note"><b>与 Stripe 的协同:</b>Lingee <b>不主动调用</b> Radar——Stripe 在收款时自动跑反欺诈评分,结果随 <code>payment_intent</code> webhook 带回,Lingee 镜像成一条 <code>risk_score</code> 检查记录(只读)。<b>sanctions(看人)</b>由 Stripe OFAC + 独立名单筛查服务做姓名比对;<b>export_control(看货)</b>是出口管制分类 + 目的地/用途判定,与 SDN 名单是两回事——二者是<b>两条独立检查</b>,不可合并。所有检查在<b>开通前的风控闸</b>汇总:全 pass 才放行开通;任一 <code>manual_review</code> → 订单停在 <code>under_review</code>,运营在「合规与风控」页人工 Clear/Block(走 APPROVAL 双人复核)。订单上的 <code>compliance_status</code> 是这些检查的<b>汇总</b>(任一 hit→blocked、有 manual_review→pending、全 pass→pass),明细在本表。</div>
+    <div class="note"><b>受限清单(法务维护,为权威来源;后台「合规 → 受限清单」基础资料页展示。字段:类型 / 对象 / 处理方式 / 说明 / 来源):</b><br>
+      本清单管<b>两类受限对象</b>——国家级 与 个人/实体级,二者维护方式截然不同:<br>
+      <b>A. 国家级规则(几十个、法务给清单、本页人工维护):</b><br>
+      ① <b>红线·禁售</b>(古巴/伊朗/朝鲜/叙利亚/俄罗斯/克里米亚/顿涅茨克/卢甘斯克):<b>两端自动拦,无人工</b>——购买页国家下拉不列出 + Stripe 按 IP/账单地址/发卡国三维拒付 + Radar 开 OFAC。不生成订单。<br>
+      ② <b>灰名单·禁售</b>(白俄罗斯/缅甸/委内瑞拉/苏丹/南苏丹/也门/利比亚/索马里/中非/刚果金/马里/黎巴嫩/阿富汗/伊拉克):现阶段<b>保守默认=同红线自动拦</b>(宁可错杀,不背实时 SDN 筛查风险)。若要放行某正经客户,由法务把该国显式调到复核层。<br>
+      ③ <b>FATF·加强监控</b>(21 国,如越南/菲律宾/土耳其/南非等):<b>不拦截</b>。注意:<b>Stripe 不认识 FATF 名单、不会自动加分</b>——需我方在 <b>Stripe Radar 配一条规则</b>(如 card_country 命中这些简码则转 Review)才会"抬分/转人工";不配规则则无任何效果。本表的 FATF 行只是<b>配 Radar 规则的源清单 + 法务监控建议的审计留痕</b>,执行在 Stripe Radar。<br>
+      <b>B. 个人/实体级(OFAC SDN 名单,几千条、天天更新):</b>不可能手工维护,<b>本页不存全量名单</b>——逐单由 <b>Stripe OFAC + 筛查服务实时查</b>,命中姓名即拦截该客户,与国家无关。本页可选保留<b>少量本地黑名单</b>(运营因欺诈/拒付手动封禁的几个账户)。<br>
+      <b>前后台怎么协同:</b>① 国家规则在后台本页人工维护 → 喂给(a)<b>前台购买页国家下拉</b>(红/灰名单国家隐藏、客户根本选不到)和(b)<b>Stripe 配置</b>(IP/账单/发卡国拦截 + OFAC);② FATF 不自动拦、不自动加分——需把这些简码<b>复制进 Stripe Radar 规则</b>才生效(本表是源清单,改这里→同步 Radar);③ <b>个人/实体筛查是实时 API 调用、不是存表</b>——前台永远看不到名单,只看到一个"允许下单的国家下拉";后台只存"国家规则 + 本地黑名单"。<br>
+      <b>存储粒度(为什么这样设计):</b>国家表<b>一国一行</b>(以国家代码为主键,可逐条增删改 + 审计;重叠按<b>取最严</b>处理——同时在灰名单与 FATF 的国家按禁售,如南苏丹/刚果金/马里/也门/叙利亚)。本地黑名单<b>一账户一行</b>(我方自行封禁、手工维护)。唯独 <b>OFAC SDN 不做一人一行</b>——它几千条天天变,只能实时筛查、不存可编辑副本。<br>
+      <b>SDN 人工复核标准(仅当某单已被标 <code>manual_review</code> 时):</b>核对客户(公司 + 具名联系人)是否真命中 OFAC SDN / 制裁名单条目——<b>确认命中→Block;误报(重名/不同主体)→Clear</b>。双人复核,结论写 <code>decided_by/decided_at</code> + AUDIT_LOG(<code>risk_cleared/risk_blocked</code>)。清单本身的增删改写 <code>restricted_list_updated</code> 审计。<b>自动筛查不替代法务定稿(TODO L6)。</b></div>
+  </div>
+
+  <!-- 集成 -->
+  <div class="card">
+    <h2>8 · 集成域</h2>
+    <div class="tname">WEBHOOK_EVENT <span class="cn">· Webhook 事件(Stripe,幂等)</span> <span class="sot sot-s">SoT Stripe</span></div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>stripe_event_id</td><td><code>string</code></td><td class="req">*</td><td><b>唯一约束</b>(幂等去重)</td></tr>
+      <tr><td>event_type</td><td><code>string</code></td><td class="req">*</td><td>checkout.session.completed / invoice.paid / payment_intent.payment_failed …</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">received</span> / <span class="enum">processed</span> / <span class="enum">failed</span> / <span class="enum">retrying</span></td></tr>
+      <tr><td>retry_count / payload</td><td><code>int/json</code></td><td></td><td>重试次数 / 原始事件体</td></tr>
+    </table>
+
+    <div class="tname">NOTIFICATION <span class="cn">· 通知记录</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc">"给谁、何时、发了什么、经哪个渠道、是否送达"的记录。客服排查"客户没收到登录链接/发票"用它。发送由通知服务执行,本表是记录(BC 后台只读展示)。<b>BC 是面向客户的对外消息的源头</b>——交易类(开通/收据/发票/续费)和运营类(新品/公告)都从 BC 发出,经邮件送达,或<b>推送到产品侧(KDM 应用的站内消息中心)</b>。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>category</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">transactional</span>(交易/账务,系统事件触发,默认必发)/ <span class="enum">announcement</span>(运营公告/新品,人工或活动触发,可被用户偏好/退订影响)</td></tr>
+      <tr><td>type</td><td><code>enum</code></td><td class="req">*</td><td><b>交易类:</b><span class="enum">activation_success</span> / <span class="enum">payment_receipt</span> / <span class="enum">tax_invoice</span> / <span class="enum">renewal_reminder</span> / <span class="enum">dunning</span> / <span class="enum">refund_confirmation</span> / <span class="enum">email_verification</span>;<b>运营类:</b><span class="enum">product_announcement</span>(新品/功能发布)/ <span class="enum">ops_notice</span>(维护/政策公告)</td></tr>
+      <tr><td>channel</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">email</span>(对外邮件,主渠道)/ <span class="enum">in_app</span>(<b>推送到产品侧 KDM 应用的站内消息中心</b>,客户登录产品后可见)/ <span class="enum">sms</span>(预留,东南亚可选 SMS/WhatsApp)。一条逻辑通知可走多渠道(如发票既邮件、又推到产品侧),按渠道各记一条</td></tr>
+      <tr><td>recipient</td><td><code>string</code></td><td class="req">*</td><td>收件人:email 为邮箱;in_app 为产品侧账号/租户;sms 为手机号</td></tr>
+      <tr><td><span class="fk">FK</span> account_id / order_id</td><td><code>uuid</code></td><td></td><td>关联客户/订单(可空,如验证码、全员公告)</td></tr>
+      <tr><td>template_version</td><td><code>string</code></td><td></td><td>所用模板版本</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">sent</span> / <span class="enum">delivered</span> / <span class="enum">bounced</span>(邮件退信)/ <span class="enum">read</span>(in_app 已读)/ <span class="enum">failed</span></td></tr>
+      <tr><td>failure_reason</td><td><code>string</code></td><td></td><td>退信/失败原因(mailbox full / invalid address …)</td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>发送时间(UTC,展示 GMT+8)</td></tr>
+    </table>
+
+    <div class="tname">SUPPORT_REQUEST <span class="cn">· 支持工单(售后)</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc"><b>售后</b>:客户就<b>已购买的服务</b>发起的问题(开通失败/退款/开票/其他)。来自购买页「Contact support」表单,或支持邮箱往来同步。<b>刻意与 LEAD(售前销售机会)分开</b>,避免污染销售管线。<b>服务以客户为中心、以权益(订阅)为单位</b>。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键(工单号 SR-xxxx)</td></tr>
+      <tr><td><span class="fk">FK</span> account_id</td><td><code>uuid</code></td><td class="req">*</td><td><b>必关联客户</b>(服务以 ACCOUNT 全景为中心)</td></tr>
+      <tr><td><span class="fk">FK</span> subscription_id</td><td><code>uuid</code></td><td></td><td><b>关联权益/订阅</b>(客户买的那「套」Lingee=权益码;已开通问题挂这)。一客户多订阅时,工单挂到对应那个</td></tr>
+      <tr><td><span class="fk">FK</span> order_id</td><td><code>uuid</code></td><td></td><td>指向具体订单(如开票纠纷,或<b>开通失败、订阅尚未建成时只挂订单</b>)</td></tr>
+      <tr><td>subject</td><td><code>string</code></td><td class="req">*</td><td>工单标题(列表/详情展示)</td></tr>
+      <tr><td>topic</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">activation</span> / <span class="enum">refund</span> / <span class="enum">billing</span> / <span class="enum">other</span></td></tr>
+      <tr><td>queue</td><td><code>enum</code></td><td class="req">*</td><td><b>归属团队(分派路由)</b>:<span class="enum">onboarding</span>(交付/开通期问题)/ <span class="enum">support</span>(已开通技术支持)/ <span class="enum">billing</span>(开票/财务)/ <span class="enum">success</span>(续费/增购经营)。统一收件箱按 queue 分派给不同团队——售前/中/后团队不同,故用队列区分而非混为一类</td></tr>
+      <tr><td>channel</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">web_form</span>(购买页提交)/ <span class="enum">email</span>(支持邮箱同步)</td></tr>
+      <tr><td>priority</td><td><code>enum</code></td><td></td><td><span class="enum">urgent</span> / <span class="enum">high</span> / <span class="enum">normal</span> / <span class="enum">low</span>。<b>用优先级表达紧迫性,不单设「售中/售后阶段」字段</b>(阶段由关联对象隐含:挂订单=交付中,挂订阅=已交付,会变且可推断)。已付未交付/开通失败 → urgent</td></tr>
+      <tr><td>contact_email</td><td><code>string</code></td><td class="req">*</td><td>客户联系邮箱(回复用)</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">open</span> / <span class="enum">awaiting_customer</span> / <span class="enum">resolved</span> / <span class="enum">closed</span></td></tr>
+      <tr><td>assignee</td><td><code>string</code></td><td></td><td>处理人(客服)</td></tr>
+      <tr><td>created_at / updated_at / resolved_at</td><td><code>timestamp</code></td><td class="req">*</td><td>创建 / 最近更新 / 解决时间(UTC,展示 GMT+8)</td></tr>
+    </table>
+    <div class="tdesc" style="margin-top:6px"><b>对话内容拆为子表 SUPPORT_MESSAGE</b>(一张工单多条往来),不在主表塞单条 message。</div>
+    <table>
+      <tr><th>SUPPORT_MESSAGE 字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> ticket_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属工单</td></tr>
+      <tr><td>sender_type / sender</td><td><code>enum / string</code></td><td class="req">*</td><td><span class="enum">customer</span> / <span class="enum">agent</span>(客服)+ 发送人标识</td></tr>
+      <tr><td>body</td><td><code>text</code></td><td class="req">*</td><td>消息正文</td></tr>
+      <tr><td>attachments</td><td><code>json</code></td><td></td><td>附件(文件名/url 列表)</td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>发送时间(UTC,展示 GMT+8)</td></tr>
+    </table>
+    <div class="note"><b>对话靠邮件双向(购买页单向):</b>购买页 Contact support 是<b>单向表单</b>——客户提交后在前端看不到回复。所以工单首条来自 <code>web_form</code> 或 <code>email</code>,之后<b>来回全走邮件</b>:客服回复 → 系统邮件发客户;客户回信 → 经<b>入站邮件解析</b>(inbound parse,如 SendGrid/Mailgun/SES;靠 <code>[SR-xxxx]</code> 标记或 <code>Reply-To: support+SRxxxx@</code> 路由到对应工单)拉回、追加为一条 <code>customer</code> 消息。<b>需集成邮箱服务(入站解析),是明确技术依赖。</b></div>
+    <div class="note"><b>SUPPORT_REQUEST(售后)≠ LEAD(售前):</b>前者是"已成单、出问题、要解决/退款",<b>以客户(ACCOUNT)为中心、按权益(SUBSCRIPTION)为单位</b>组织服务,可下钻到具体 ORDER;后者是"还没买、销售机会",进商机管线。两者分开,避免售后报障污染销售预测。<br><b>为什么按权益不按订单:</b>一个订阅(客户买的一「套」Lingee=权益码)生命周期里有多笔 ORDER(新购+增购+续费),客户说"我这套用不了"指的是那个<b>订阅/环境</b>,不是某一笔订单。开通失败、订阅还没建成时,工单只挂 ORDER。</div>
+
+    <div class="tname">MESSAGE_LOG <span class="cn">· 收发消息总账(BC ↔ 客户 原始底账)</span> <span class="sot sot-l">SoT 灵基</span></div>
+    <div class="tdesc"><b>一切 BC 与客户之间的收发,先无条件全量落一行,再按会话归类</b>——出站(BC 发客户:开通信、收据、发票、续费提醒、客服回复…)与入站(客户发 BC:工单表单、邮件回信…)都进同一张表。这是<b>运营的原始底账</b>:任何"客户说没收到/我回了你没理"的争议都能在此查到原文与时间;也是<b>支持工单对话的来源</b>(工单消息 = 归类到某工单的消息记录)。<b>先存后归类</b>:关联对象可空,未匹配的也先存下、等人工或规则归类,不丢任何信息。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>direction</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">outbound</span>(BC→客户)/ <span class="enum">inbound</span>(客户→BC)</td></tr>
+      <tr><td>channel</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">email</span>(主)/ <span class="enum">in_app</span>(产品侧站内)/ <span class="enum">sms</span>(预留)/ <span class="enum">web_form</span>(购买页 Contact support 表单,仅入站)</td></tr>
+      <tr><td>from_addr / to_addr</td><td><code>string</code></td><td class="req">*</td><td>收发地址(邮箱/租户/手机号);入站 from=客户,出站 from=BC 支持邮箱</td></tr>
+      <tr><td>subject / body</td><td><code>string / text</code></td><td class="req">*</td><td>主题 / 正文(渲染后原文,留存供查证)</td></tr>
+      <tr><td>attachments</td><td><code>json</code></td><td></td><td>附件(文件名/url 列表)</td></tr>
+      <tr><td>category</td><td><code>enum</code></td><td></td><td><b>业务分类(单值——一条消息一个主用途,便于过滤/统计;不挂多分类)</b>(出站多有,引用通知类型):<span class="enum">activation_success</span> / <span class="enum">payment_receipt</span> / <span class="enum">tax_invoice</span> / <span class="enum">renewal_reminder</span> / <span class="enum">dunning</span> / <span class="enum">refund_confirmation</span> / <span class="enum">email_verification</span> / <span class="enum">support_reply</span> / <span class="enum">inbound_reply</span> / <span class="enum">inbound_form</span></td></tr>
+      <tr><td>account_id</td><td><code>uuid</code></td><td></td><td><b>锚点关联</b>(几乎总能解析):该消息属于哪个客户。其余多值关联见下方 <b>MESSAGE_LINK</b> 子表</td></tr>
+      <tr><td>routing_status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">routed</span>(已归类到工单/对象)/ <span class="enum">unmatched</span>(无法归类,待人工)/ <span class="enum">pending</span>(处理中)</td></tr>
+      <tr><td>delivery_status</td><td><code>enum</code></td><td></td><td><b>仅出站</b>(来自邮件集成回执):<span class="enum">sent</span> / <span class="enum">delivered</span> / <span class="enum">bounced</span> / <span class="enum">failed</span>;入站可空</td></tr>
+      <tr><td>provider / provider_message_id</td><td><code>string</code></td><td></td><td>邮件服务商(SendGrid/Mailgun/SES)+ 其报文 id。<b>按 provider_message_id 幂等去重</b>,并用于回执对账</td></tr>
+      <tr><td>notification_id</td><td><code>uuid</code></td><td></td><td>出站业务通知时关联 NOTIFICATION(本期通知记录暂不做,字段预留)</td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>收/发时间(UTC,展示 GMT+8)</td></tr>
+    </table>
+    <div class="tdesc" style="margin-top:6px"><b>多值关联拆为子表 MESSAGE_LINK</b>(一条消息挂 N 个任意类型对象;加新对象类型不改表)。主表只留 <code>account_id</code> 锚点。</div>
+    <table>
+      <tr><th>MESSAGE_LINK 字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id / <span class="fk">FK</span> message_id</td><td><code>uuid</code></td><td class="req">*</td><td>所属消息</td></tr>
+      <tr><td>entity_type</td><td><code>enum</code></td><td class="req">*</td><td>关联对象类型:<span class="enum">account</span> / <span class="enum">order</span> / <span class="enum">invoice</span> / <span class="enum">subscription</span> / <span class="enum">support_request</span>(可扩展,加类型不改表结构)</td></tr>
+      <tr><td>entity_id</td><td><code>uuid</code></td><td class="req">*</td><td>该对象的 id(多态关联:entity_type + entity_id 定位任意对象)</td></tr>
+      <tr><td>linked_by</td><td><code>enum</code></td><td class="req">*</td><td><b>归类来源/可信度</b>:<span class="enum">system</span>(规则自动解析,如主题 [SR-xxxx]、发票号匹配)/ <span class="enum">human</span>(人工在「归类」弹窗指定)</td></tr>
+      <tr><td>linked_at / linked_actor</td><td><code>timestamp / string</code></td><td></td><td>归类时间 / 操作人(human 时记账号)</td></tr>
+    </table>
+    <div class="note"><b>与既有实体的关系(总账 = 底层,其余是它的视图):</b><br>
+      ① <b>支持工单对话</b>:SUPPORT_MESSAGE 不再独立存正文,而是 <b>MESSAGE_LOG 中经 MESSAGE_LINK 关联到某工单(entity_type=support_request)的记录</b>。客户回信先落总账 → 按 <code>[SR-xxxx]</code> / <code>Reply-To: support+SRxxxx@</code> 自动建一条 <code>linked_by=system</code> 的 link(<code>routed</code>);无标记则 <code>unmatched</code>、人工在「归类」弹窗建 <code>linked_by=human</code> 的 link。<br>
+      ② <b>出站业务通知</b>:通知服务发邮件时落一条 <code>outbound</code>,投递状态由邮件集成回执更新;业务视图(本期暂不做的「通知记录」)只是按 category 过滤的总账视图。<br>
+      ③ <b>本期只做这张底账</b>:开发先把所有收发全量存下(出站打点 + 入站解析),为后续运营分析、工单信息流、通知记录打地基。<b>需集成邮件服务(出站发送 + 入站解析),是明确技术依赖(见 todolist)。</b><br>
+      ④ <b>category 与关联正交</b>(关键设计):<code>category</code> 回答"这封消息<b>是什么</b>"(单值主用途,用于过滤/统计);<b>MESSAGE_LINK 回答"它<b>关于谁</b>"</b>(多值上下文,不互斥)。两者互不替代。走查"客户索要发票":<br>
+      &nbsp;&nbsp;• 客户来信要 INV-0007 → 入站一条(category=<code>inbound_reply</code>)→ link: support_request + account;<br>
+      &nbsp;&nbsp;• 客服发出发票 → 出站一条(category=<code>tax_invoice</code>)→ link: invoice(INV-0007) + order(LG-OS-…0007) + account,由工单触发再加 support_request——一条消息四条 link,点哪个跳哪个。<br>
+      所以同一条消息会出现在工单对话流、订单消息、发票消息、客户 360 多个视图里——这正是"先全量落账、按多维度归类"的价值。<br>
+      ⑤ <b>为何用 MESSAGE_LINK 多态表而非主表并列 FK</b>:并列 FK(order_id/invoice_id/…)量小够用但加第 6 种对象就要改表;多态关联表(entity_type+entity_id)一条消息挂任意多个任意类型对象、可扩展,并能记 <code>linked_by</code> 区分自动/人工。落地按团队偏好选型,本设计取后者。</div>
+
+
+
+
+    <div class="tname">AUDIT_LOG <span class="cn">· 操作审计(全系统)</span> <span class="sot sot-l">SoT 灵基</span> <span class="badge b-cmp">合规</span></div>
+    <div class="tdesc"><b>只增不改、长期留存。</b>记<b>人的敏感操作</b>(谁/何时/对什么/做了什么/备注),横切全系统,给合规/审计/安全用。<b>只存"动作"这条短记录</b>(actor / action / target_ref / note / 时间 / IP),<b>不存业务数据本身</b>——如退款金额/卡/Stripe id 在 REFUND 表,这里只引用 <code>target_ref</code>(如 refund_id)。与 ORDER_EVENT(订单状态历史)<b>分开</b>:状态流转是机器领域数据,操作审计是追责。<b>不该进来的:</b>订单状态流转(→ORDER_EVENT)、Webhook 原始包/重试(→日志系统)、系统自动流程、普通字段改动。业内通行(Salesforce Setup Audit Trail / AWS CloudTrail)即此分层。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>action</td><td><code>enum</code></td><td class="req">*</td><td><b>记录的敏感操作(穷举):</b><br>退款:<span class="enum">refund_requested</span>(发起)/ <span class="enum">refund_approved</span>(审批通过)/ <span class="enum">refund_rejected</span>(审批驳回)<br>拒付:<span class="enum">dispute_evidence_submitted</span>(提交证据)<br>风控:<span class="enum">risk_cleared</span>(放行)/ <span class="enum">risk_blocked</span>(拦截)<br>发票:<span class="enum">invoice_edited</span>(改开票)/ <span class="enum">credit_note_issued</span>(红冲)/ <span class="enum">invoice_resent</span>(重发)<br>开通:<span class="enum">provisioning_retried</span>(重试/补开)<br>目录/定价:<span class="enum">sku_published</span>(新建/上架 SKU)/ <span class="enum">price_tier_changed</span>(改价格档,同步 Stripe)/ <span class="enum">sku_archived</span>(归档)<br>合规/法务:<span class="enum">agreement_version_published</span>(协议发版)/ <span class="enum">restricted_list_updated</span>(受限清单增删改)<br>系统/安全:<span class="enum">config_changed</span>(改配置/税率)/ <span class="enum">data_export</span>(导出)/ <span class="enum">login</span>(登录)</td></tr>
+      <tr><td>actor / actor_type</td><td><code>string / enum</code></td><td class="req">*</td><td>操作人(邮箱/系统);<span class="enum">admin</span> / <span class="enum">system</span></td></tr>
+      <tr><td>target_type / target_id</td><td><code>string</code></td><td class="req">*</td><td>对象(order / invoice / agreement / config …)+ 其 id</td></tr>
+      <tr><td>detail</td><td><code>json</code></td><td></td><td>变更详情(如 before/after、金额、版本号)</td></tr>
+      <tr><td>ip / user_agent</td><td><code>string</code></td><td></td><td>来源 IP / 浏览器</td></tr>
+      <tr><td>created_at</td><td><code>timestamp</code></td><td class="req">*</td><td>时间(UTC,展示 GMT+8)</td></tr>
+    </table>
+
+    <div class="tname">APPROVAL <span class="cn">· 审批记录(敏感操作的人工审批)</span> <span class="sot sot-l">SoT 灵基</span> <span class="badge b-cmp">合规</span></div>
+    <div class="tdesc"><b>统一审批模型</b>:把所有"敏感操作需人工批准"的场景集中记录,不在各业务表各塞 approved_by。支撑统一的「待审批」工作台 + 双人复核(发起人 ≠ 审批人)+ 审批留痕。<b>审批"通过/驳回"动作本身也会写一条 AUDIT_LOG</b>(两者分工:APPROVAL 是审批流程的状态机记录,AUDIT_LOG 是不可改的追责流水)。</div>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明 / 枚举值</th></tr>
+      <tr><td><span class="pk">PK</span> id</td><td><code>uuid</code></td><td></td><td>主键</td></tr>
+      <tr><td>type</td><td><code>enum</code></td><td class="req">*</td><td>审批场景:<span class="enum">refund</span>(开通后退款)/ <span class="enum">risk_clear</span>(风控放行)/ <span class="enum">credit_note</span>(发票红冲)/ <span class="enum">agreement_publish</span>(协议发版)</td></tr>
+      <tr><td>target_type / target_id</td><td><code>string</code></td><td class="req">*</td><td>被审批对象 + 其 id(如 refund / RF-0003)</td></tr>
+      <tr><td>requested_by / requested_at</td><td><code>string / timestamp</code></td><td class="req">*</td><td>发起人 / 发起时间</td></tr>
+      <tr><td>status</td><td><code>enum</code></td><td class="req">*</td><td><span class="enum">pending</span> / <span class="enum">approved</span> / <span class="enum">rejected</span></td></tr>
+      <tr><td>decided_by / decided_at</td><td><code>string / timestamp</code></td><td></td><td>审批人 / 审批时间(须 ≠ 发起人,双人复核)</td></tr>
+      <tr><td>note</td><td><code>text</code></td><td></td><td><b>审批意见</b>(批准/驳回理由,必填)</td></tr>
+    </table>
+    <div class="note"><b>为什么单立 APPROVAL:</b>退款审批、风控放行、红冲、协议发版都是"敏感操作要人批"。集中成一个实体后:① 有统一「待审批」工作台,不用各页找;② 强制双人复核(发起≠审批);③ 退款详情的"审批轨迹"从 REFUND 字段 + 本表读,不从 AUDIT_LOG 拼。各业务表(如 REFUND)只引用 approval_id,不重复存审批字段。</div>
+  </div>
+
+  <div class="card">
+    <h2 id="enum-dict">附录 · 枚举字典(权威源)<span class="tag">key / 中文 / English</span></h2>
+    <div class="sub">全站唯一真相源。所有界面只存 <code>key</code>,显示文案按当前语言查本表(中/英),<b>前端不写死中文或英文</b>。新增/改文案只改这里。下游(KDM/ERP/Stripe metadata)按 key 对接,与展示语言无关。<br><b>怎么读:</b>标题里带斜杠的(如 <code>payment.status / method / failure_code</code>)表示这张表汇总了同一实体的<b>多个字段</b>的枚举;表内第一列「字段 Field」标明每行属于哪个字段——按字段分组阅读即可。</div>
+
+    <div class="tname">order.status <span class="cn">· 订单状态(状态机 9 态)</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>pending_payment</code></td><td>待支付</td><td>Pending payment</td><td>订单已建、未付(14 天有效)</td></tr>
+      <tr><td><code>under_review</code></td><td>审核中</td><td>Under review</td><td>已付款,过风控/合规 + 对齐闸</td></tr>
+      <tr><td><code>provisioning</code></td><td>履约中</td><td>Provisioning</td><td>正在建租户/加席位/续期/减配</td></tr>
+      <tr><td><code>completed</code></td><td>已完成</td><td>Completed</td><td>该订单履约动作完成、服务可用(终态·成功);四种 order_type 通用</td></tr>
+      <tr><td><code>activation_failed</code></td><td>开通失败</td><td>Activation failed</td><td>已付款但建租户失败(补开或退款)</td></tr>
+      <tr><td><code>rejected</code></td><td>合规拒绝</td><td>Rejected</td><td>风控/制裁拦截,不可售 → 退款</td></tr>
+      <tr><td><code>cancelled</code></td><td>已取消</td><td>Cancelled</td><td>客户主动取消(终态)</td></tr>
+      <tr><td><code>closed</code></td><td>已关闭</td><td>Closed</td><td>超 14 天未付自动关闭(终态)</td></tr>
+      <tr><td><code>refunded</code></td><td>已退款</td><td>Refunded</td><td>退款完成(终态)</td></tr>
+    </table>
+
+    <div class="tname">order.order_type <span class="cn">· 收入动作</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>new_business</code></td><td>新购</td><td>New business</td><td>首次购买</td></tr>
+      <tr><td><code>expansion</code></td><td>增购</td><td>Expansion</td><td>加席位 / 加点数 / 升版</td></tr>
+      <tr><td><code>renewal</code></td><td>续费</td><td>Renewal</td><td>续期</td></tr>
+      <tr><td><code>contraction</code></td><td>减配</td><td>Contraction</td><td>减席位/降配</td></tr>
+    </table>
+
+    <div class="tname">order.compliance_status <span class="cn">· 合规汇总</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>pending</code></td><td>待复核</td><td>Pending</td><td>有 manual_review 项</td></tr>
+      <tr><td><code>pass</code></td><td>通过</td><td>Pass</td><td>全部检查通过</td></tr>
+      <tr><td><code>blocked</code></td><td>已拦截</td><td>Blocked</td><td>任一 hit</td></tr>
+    </table>
+
+    <div class="tname">compliance_check.check_type / result <span class="cn">· 合规筛查</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>check_type</code></td><td><code>sanctions</code></td><td>制裁名单</td><td>Sanctions</td><td>看人:客户(公司/个人)比对 OFAC SDN/制裁清单</td></tr>
+      <tr><td><code>check_type</code></td><td><code>export_control</code></td><td>出口管制</td><td>Export control</td><td>看货:技术/用途能否出口到该目的地(分类+最终用途判定,非 SDN 名单)</td></tr>
+      <tr><td><code>check_type</code></td><td><code>risk_score</code></td><td>风险评分</td><td>Risk score</td><td>来自 Stripe Radar</td></tr>
+      <tr><td><code>check_type</code></td><td><code>tax_id</code></td><td>税号校验</td><td>Tax ID</td><td>格式/有效性</td></tr>
+      <tr><td><code>result</code></td><td><code>pass</code></td><td>通过</td><td>Pass</td><td>结果:通过</td></tr>
+      <tr><td><code>result</code></td><td><code>hit</code></td><td>命中</td><td>Hit</td><td>结果:命中 → 拦截</td></tr>
+      <tr><td><code>result</code></td><td><code>manual_review</code></td><td>人工复核</td><td>Manual review</td><td>结果:转人工</td></tr>
+    </table>
+
+    <div class="tname">fulfillment.alignment_result <span class="cn">· TID/SN 对齐结果</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>new_business</code></td><td>新购</td><td>New business</td><td>KBC 查无 → 建新租户</td></tr>
+      <tr><td><code>expansion</code></td><td>增购</td><td>Expansion</td><td>KBC 已有 SN → 挂已有租户</td></tr>
+      <tr><td><code>awaiting_alignment</code></td><td>待对齐</td><td>Awaiting alignment</td><td>KBC 慢/未响应,排队重试</td></tr>
+      <tr><td><code>conflict</code></td><td>冲突</td><td>Conflict</td><td>入口初判与 KBC 不一致 → 人工复核</td></tr>
+    </table>
+
+    <div class="tname">fulfillment.task_status <span class="cn">· 交付任务状态</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>completed</code></td><td>已完成</td><td>Completed</td><td>租户/权益/点数建成</td></tr>
+      <tr><td><code>awaiting_alignment</code></td><td>待对齐</td><td>Awaiting alignment</td><td>等 KBC 对齐</td></tr>
+      <tr><td><code>manual_review</code></td><td>人工复核</td><td>Manual review</td><td>对齐冲突待人工</td></tr>
+      <tr><td><code>failed</code></td><td>失败</td><td>Failed</td><td>建租户失败 → activation_failed</td></tr>
+    </table>
+
+    <div class="tname">payment.status / method / failure_code <span class="cn">· 支付</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>status</code></td><td><code>succeeded</code></td><td>成功</td><td>Succeeded</td><td>扣款成功</td></tr>
+      <tr><td><code>status</code></td><td><code>processing</code></td><td>处理中</td><td>Processing</td><td>异步付款待确认(如 FPX)</td></tr>
+      <tr><td><code>status</code></td><td><code>failed</code></td><td>失败</td><td>Failed</td><td>一次支付尝试失败</td></tr>
+      <tr><td><code>status</code></td><td><code>canceled</code></td><td>已取消</td><td>Canceled</td><td>支付意图取消</td></tr>
+      <tr><td><code>method</code></td><td><code>card / fpx / grabpay / applepay / googlepay / link</code></td><td>卡 / FPX / GrabPay / Apple Pay / Google Pay / Link</td><td>(同 key)</td><td>支付方式</td></tr>
+      <tr><td><code>failure_code</code></td><td><code>insufficient_funds / card_declined / expired_card / incorrect_cvc / processing_error / authentication_required / fraudulent / lost_card / stolen_card / currency_not_supported</code></td><td>余额不足 / 卡被拒 / 卡过期 / CVC 错误 / 处理错误 / 需验证 / 疑欺诈 / 挂失卡 / 被盗卡 / 币种不支持</td><td>(Stripe 失败码原文)</td><td>失败原因(Stripe 回传)</td></tr>
+    </table>
+
+    <div class="tname">refund.reason / status <span class="cn">· 退款</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>reason</code></td><td><code>compliance_rejected</code></td><td>合规拒绝</td><td>Compliance rejected</td><td>系统自动退(我方责任)</td></tr>
+      <tr><td><code>reason</code></td><td><code>activation_failed</code></td><td>开通失败</td><td>Activation failed</td><td>系统自动退(我方责任)</td></tr>
+      <tr><td><code>reason</code></td><td><code>pre_activation</code></td><td>开通前取消</td><td>Pre-activation cancel</td><td>客服选;可自动通过</td></tr>
+      <tr><td><code>reason</code></td><td><code>duplicate</code></td><td>重复支付</td><td>Duplicate</td><td>客服选</td></tr>
+      <tr><td><code>reason</code></td><td><code>overpayment</code></td><td>多付/金额错</td><td>Overpayment</td><td>客服选</td></tr>
+      <tr><td><code>status</code></td><td><code>pending_approval</code></td><td>待审批</td><td>Pending approval</td><td>开通后退款待人工</td></tr>
+      <tr><td><code>status</code></td><td><code>pending</code></td><td>处理中</td><td>Pending</td><td>已发起,等 Stripe</td></tr>
+      <tr><td><code>status</code></td><td><code>succeeded</code></td><td>已完成</td><td>Succeeded</td><td>退款到账</td></tr>
+      <tr><td><code>status</code></td><td><code>rejected</code></td><td>已驳回</td><td>Rejected</td><td>审批驳回</td></tr>
+      <tr><td><code>status</code></td><td><code>failed</code></td><td>失败</td><td>Failed</td><td>Stripe 退款失败,需重试</td></tr>
+    </table>
+
+    <div class="tname">dispute.status / reason <span class="cn">· 拒付</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>status</code></td><td><code>warning_needs_response</code></td><td>待举证</td><td>Needs response</td><td>需提交证据</td></tr>
+      <tr><td><code>status</code></td><td><code>under_review</code></td><td>审理中</td><td>Under review</td><td>已举证,等发卡行</td></tr>
+      <tr><td><code>status</code></td><td><code>won</code></td><td>胜诉</td><td>Won</td><td>拒付驳回</td></tr>
+      <tr><td><code>status</code></td><td><code>lost</code></td><td>败诉</td><td>Lost</td><td>资金扣回 + 手续费</td></tr>
+      <tr><td><code>reason</code></td><td><code>fraudulent</code></td><td>称未授权(盗刷)</td><td>Fraudulent</td><td>原因(Stripe 回传)</td></tr>
+      <tr><td><code>reason</code></td><td><code>product_not_received</code></td><td>称没收到服务</td><td>Product not received</td><td>原因</td></tr>
+      <tr><td><code>reason</code></td><td><code>product_unacceptable</code></td><td>称服务有问题</td><td>Product unacceptable</td><td>原因</td></tr>
+      <tr><td><code>reason</code></td><td><code>duplicate</code></td><td>称重复扣款</td><td>Duplicate</td><td>原因</td></tr>
+      <tr><td><code>reason</code></td><td><code>subscription_canceled</code></td><td>称已取消还被扣</td><td>Subscription canceled</td><td>原因</td></tr>
+      <tr><td><code>reason</code></td><td><code>credit_not_processed</code></td><td>称该退未退</td><td>Credit not processed</td><td>原因</td></tr>
+      <tr><td><code>reason</code></td><td><code>unrecognized</code></td><td>称不认识此笔</td><td>Unrecognized</td><td>原因</td></tr>
+    </table>
+
+    <div class="tname">subscription.status <span class="cn">· 订阅</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>active</code></td><td>活跃</td><td>Active</td><td>服务有效</td></tr>
+      <tr><td><code>past_due</code></td><td>逾期</td><td>Past due</td><td>续费失败,催缴中</td></tr>
+      <tr><td><code>canceled</code></td><td>已取消</td><td>Canceled</td><td>退款/主动取消</td></tr>
+      <tr><td><code>expired</code></td><td>已过期</td><td>Expired</td><td>到期未续</td></tr>
+    </table>
+
+    <div class="tname">tenant.type / status <span class="cn">· 租户</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>type</code></td><td><code>production</code></td><td>生产</td><td>Production</td><td>正式租户</td></tr>
+      <tr><td><code>type</code></td><td><code>sandbox</code></td><td>沙箱</td><td>Sandbox</td><td>测试租户</td></tr>
+      <tr><td><code>status</code></td><td><code>ready</code></td><td>就绪</td><td>Ready</td><td>可用</td></tr>
+      <tr><td><code>status</code></td><td><code>suspended</code></td><td>停用</td><td>Suspended</td><td>停登录(回收中)</td></tr>
+      <tr><td><code>status</code></td><td><code>terminated</code></td><td>已销毁</td><td>Terminated</td><td>数据删除/匿名化</td></tr>
+    </table>
+
+    <div class="tname">account.lifecycle_stage / tax_treatment <span class="cn">· 客户</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>lifecycle_stage</code></td><td><code>prospect</code></td><td>意向</td><td>Prospect</td><td>未成交</td></tr>
+      <tr><td><code>lifecycle_stage</code></td><td><code>active</code></td><td>活跃</td><td>Active</td><td>有活跃订阅</td></tr>
+      <tr><td><code>lifecycle_stage</code></td><td><code>past_due</code></td><td>逾期</td><td>Past due</td><td>有逾期订阅</td></tr>
+      <tr><td><code>lifecycle_stage</code></td><td><code>churned</code></td><td>流失</td><td>Churned</td><td>全部到期未续</td></tr>
+      <tr><td><code>lifecycle_stage</code></td><td><code>suspended</code></td><td>停用</td><td>Suspended</td><td>合规/欠费停用</td></tr>
+      <tr><td><code>tax_treatment</code></td><td><code>domestic_sst</code></td><td>本地 SST</td><td>Domestic SST</td><td>马来本地,套 SST 8%</td></tr>
+      <tr><td><code>tax_treatment</code></td><td><code>export_zero_rated</code></td><td>出口零税率</td><td>Export zero-rated</td><td>海外,零税率</td></tr>
+    </table>
+
+    <div class="tname">account.dedup_status <span class="cn">· 客户查重(与 KBC 对齐)</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>matched</code></td><td>已对齐</td><td>Matched</td><td>已绑定 KBC TID</td></tr>
+      <tr><td><code>new</code></td><td>新建</td><td>New</td><td>KBC 新建主数据</td></tr>
+      <tr><td><code>manual_review</code></td><td>待合并</td><td>Manual review</td><td>模糊匹配,人工合并</td></tr>
+      <tr><td><code>pending</code></td><td>待对齐</td><td>Pending</td><td>KBC 未响应,待重试</td></tr>
+    </table>
+
+    <div class="tname">lead.source / status / auto_recommendation / score_band <span class="cn">· 线索</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>source</code></td><td><code>website_contact</code></td><td>官网询价</td><td>Website contact</td><td>来源</td></tr>
+      <tr><td><code>source</code></td><td><code>in_product_contact</code></td><td>产品内询价</td><td>In-product contact</td><td>来源(PQL)</td></tr>
+      <tr><td><code>source</code></td><td><code>free_trial_signup</code></td><td>申请试用</td><td>Free trial signup</td><td>来源</td></tr>
+      <tr><td><code>source</code></td><td><code>volume / marketing / referral</code></td><td>批量 / 市场 / 转介绍</td><td>Volume / Marketing / Referral</td><td>来源</td></tr>
+      <tr><td><code>status</code></td><td><code>new / contacted / qualified / disqualified</code></td><td>新建 / 已联系 / 合格 / 无效</td><td>New / Contacted / Qualified / Disqualified</td><td>状态</td></tr>
+      <tr><td><code>auto_recommendation</code></td><td><code>recommend_qualify / needs_review / auto_disqualify</code></td><td>建议合格 / 待人工核 / 自动判不合格</td><td>Recommend qualify / Needs review / Auto-disqualify</td><td>系统建议</td></tr>
+      <tr><td><code>score_band</code></td><td><code>hot / warm / cold</code></td><td>高 / 中 / 低</td><td>Hot / Warm / Cold</td><td>评分档</td></tr>
+    </table>
+
+    <div class="tname">opportunity.stage <span class="cn">· 商机</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>qualifying</code></td><td>鉴定中</td><td>Qualifying</td><td></td></tr>
+      <tr><td><code>quoting</code></td><td>报价中</td><td>Quoting</td><td></td></tr>
+      <tr><td><code>won</code></td><td>赢单</td><td>Won</td><td>→ 转 ORDER</td></tr>
+      <tr><td><code>lost</code></td><td>输单</td><td>Lost</td><td></td></tr>
+    </table>
+
+    <div class="tname">invoice.type / doc_type / myinvois_status <span class="cn">· 发票 · MyInvois</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>type</code></td><td><code>invoice</code></td><td>发票</td><td>Invoice</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>credit_note</code></td><td>红冲单</td><td>Credit note</td><td>类型</td></tr>
+      <tr><td><code>doc_type</code></td><td><code>standard</code></td><td>标准电子发票</td><td>Standard</td><td>本地客户(买方 TIN 必填)</td></tr>
+      <tr><td><code>doc_type</code></td><td><code>self_billed</code></td><td>自开票</td><td>Self-billed</td><td>海外客户</td></tr>
+      <tr><td><code>myinvois_status</code></td><td><code>pending</code></td><td>待校验</td><td>Pending</td><td>MyInvois 待取证</td></tr>
+      <tr><td><code>myinvois_status</code></td><td><code>submitted</code></td><td>已上报</td><td>Submitted</td><td>已提交 LHDN</td></tr>
+      <tr><td><code>myinvois_status</code></td><td><code>validated</code></td><td>已校验</td><td>Validated</td><td>取回 UUID + QR</td></tr>
+      <tr><td><code>myinvois_status</code></td><td><code>rejected</code></td><td>已驳回</td><td>Rejected</td><td>LHDN 退回</td></tr>
+    </table>
+
+    <div class="tname">notification.category / channel / type / delivery_status <span class="cn">· 通知</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>category</code></td><td><code>transactional</code></td><td>交易类</td><td>Transactional</td><td>系统事件触发,默认必发</td></tr>
+      <tr><td><code>category</code></td><td><code>announcement</code></td><td>公告类</td><td>Announcement</td><td>运营/新品,可退订</td></tr>
+      <tr><td><code>channel</code></td><td><code>email / in_app / sms</code></td><td>邮件 / 站内 / 短信</td><td>Email / In-app / SMS</td><td>渠道</td></tr>
+      <tr><td><code>type</code></td><td><code>activation_success</code></td><td>开通成功</td><td>Activation success</td><td>类型(含登录链接)</td></tr>
+      <tr><td><code>type</code></td><td><code>payment_receipt</code></td><td>支付收据</td><td>Payment receipt</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>tax_invoice</code></td><td>税务发票</td><td>Tax invoice</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>renewal_reminder</code></td><td>续费提醒</td><td>Renewal reminder</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>dunning</code></td><td>催缴</td><td>Dunning</td><td>续费失败</td></tr>
+      <tr><td><code>type</code></td><td><code>refund_confirmation</code></td><td>退款确认</td><td>Refund confirmation</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>email_verification</code></td><td>邮箱验证</td><td>Email verification</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>product_announcement</code></td><td>新品发布</td><td>Product announcement</td><td>类型</td></tr>
+      <tr><td><code>type</code></td><td><code>ops_notice</code></td><td>运营公告</td><td>Ops notice</td><td>维护/政策</td></tr>
+      <tr><td><code>delivery_status</code></td><td><code>delivered / bounced / failed / sent / read</code></td><td>已送达 / 退信 / 失败 / 已发送 / 已读</td><td>Delivered / Bounced / Failed / Sent / Read</td><td>送达状态</td></tr>
+    </table>
+
+    <div class="tname">support_request.queue / topic / status / priority <span class="cn">· 售后工单</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>queue</code></td><td><code>onboarding / billing / success</code></td><td>开通 / 账务 / 客户成功</td><td>Onboarding / Billing / Success</td><td>队列</td></tr>
+      <tr><td><code>topic</code></td><td><code>activation / refund / billing / other</code></td><td>开通 / 退款 / 账务 / 其他</td><td>Activation / Refund / Billing / Other</td><td>主题</td></tr>
+      <tr><td><code>status</code></td><td><code>open / awaiting_customer / resolved / closed</code></td><td>待处理 / 等客户 / 已解决 / 已关闭</td><td>Open / Awaiting customer / Resolved / Closed</td><td>状态</td></tr>
+      <tr><td><code>priority</code></td><td><code>urgent / high / normal / low</code></td><td>紧急 / 高 / 普通 / 低</td><td>Urgent / High / Normal / Low</td><td>优先级</td></tr>
+    </table>
+
+    <div class="tname">message_log.direction / channel / routing_status / delivery_status <span class="cn">· 收发消息总账</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>direction</code></td><td><code>outbound / inbound</code></td><td>出站 / 入站</td><td>Outbound / Inbound</td><td>方向(BC→客户 / 客户→BC)</td></tr>
+      <tr><td><code>channel</code></td><td><code>email / in_app / sms / web_form</code></td><td>邮件 / 站内 / 短信 / 网页表单</td><td>Email / In-app / SMS / Web form</td><td>渠道</td></tr>
+      <tr><td><code>routing_status</code></td><td><code>routed</code></td><td>已归类</td><td>Routed</td><td>已关联到工单/对象</td></tr>
+      <tr><td><code>routing_status</code></td><td><code>unmatched</code></td><td>未匹配</td><td>Unmatched</td><td>无法归类,待人工</td></tr>
+      <tr><td><code>routing_status</code></td><td><code>pending</code></td><td>处理中</td><td>Pending</td><td>归类处理中</td></tr>
+      <tr><td><code>delivery_status</code></td><td><code>sent / delivered / bounced / failed</code></td><td>已发送 / 已送达 / 退信 / 失败</td><td>Sent / Delivered / Bounced / Failed</td><td>投递状态(仅出站)</td></tr>
+    </table>
+
+    <div class="tname">message_link.entity_type / linked_by <span class="cn">· 消息关联(多态)</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>entity_type</code></td><td><code>account / order / invoice / subscription / support_request</code></td><td>客户 / 订单 / 发票 / 订阅 / 工单</td><td>Account / Order / Invoice / Subscription / Support request</td><td>关联对象类型(可扩展)</td></tr>
+      <tr><td><code>linked_by</code></td><td><code>system</code></td><td>自动</td><td>System</td><td>规则自动解析的关联(主题标记/单号匹配)</td></tr>
+      <tr><td><code>linked_by</code></td><td><code>human</code></td><td>人工</td><td>Human</td><td>人工在「归类」弹窗指定的关联</td></tr>
+    </table>
+
+    <div class="tname">approval.type / status <span class="cn">· 审批</span></div>
+    <table>
+      <tr><th>字段 Field</th><th>key</th><th>中文</th><th>English</th><th>说明</th></tr>
+      <tr><td><code>type</code></td><td><code>refund</code></td><td>退款</td><td>Refund</td><td>开通后退款</td></tr>
+      <tr><td><code>type</code></td><td><code>risk_clear</code></td><td>风控放行</td><td>Risk clearance</td><td></td></tr>
+      <tr><td><code>type</code></td><td><code>credit_note</code></td><td>发票红冲</td><td>Credit note</td><td></td></tr>
+      <tr><td><code>type</code></td><td><code>agreement_publish</code></td><td>协议发版</td><td>Agreement publish</td><td></td></tr>
+      <tr><td><code>status</code></td><td><code>pending / approved / rejected</code></td><td>待审批 / 通过 / 驳回</td><td>Pending / Approved / Rejected</td><td>状态</td></tr>
+    </table>
+
+    <div class="tname">audit_log.action <span class="cn">· 操作审计动作</span></div>
+    <table>
+      <tr><th>key</th><th>中文</th><th>English</th></tr>
+      <tr><td><code>refund_requested / refund_approved / refund_rejected</code></td><td>发起退款 / 退款通过 / 退款驳回</td><td>Refund requested / approved / rejected</td></tr>
+      <tr><td><code>dispute_evidence_submitted</code></td><td>提交拒付证据</td><td>Dispute evidence submitted</td></tr>
+      <tr><td><code>risk_cleared / risk_blocked</code></td><td>风控放行 / 风控拦截</td><td>Risk cleared / blocked</td></tr>
+      <tr><td><code>invoice_edited / credit_note_issued / invoice_resent</code></td><td>改开票 / 红冲 / 重发发票</td><td>Invoice edited / Credit note issued / Invoice resent</td></tr>
+      <tr><td><code>provisioning_retried</code></td><td>重试开通</td><td>Provisioning retried</td></tr>
+      <tr><td><code>sku_published / price_tier_changed / sku_archived</code></td><td>上架SKU / 改价格档 / 归档SKU</td><td>SKU published / Price tier changed / SKU archived</td></tr>
+      <tr><td><code>agreement_version_published / restricted_list_updated</code></td><td>协议发版 / 更新受限清单</td><td>Agreement version published / Restricted list updated</td></tr>
+      <tr><td><code>config_changed / data_export / login</code></td><td>改配置 / 导出 / 登录</td><td>Config changed / Data export / Login</td></tr>
+    </table>
+
+    <div class="note green"><b>用法约定:</b>① 界面元素只携带 key(如 <code>data-status="activation_failed"</code>),渲染时按语言查本表取文案;原型里用 <code>data-en/data-zh</code> 双语属性模拟同一机制。② key 一律 snake_case 英文,<b>不随语言变</b>;下游系统、Stripe metadata、KDM/ERP 接口都按 key 对接。③ 改文案或加值只在本表改,界面自动跟随。④ 与各实体字段表的枚举值保持一致——本表是汇总权威,字段表是局部引用。⑤ <b>枚举按域(实体.字段)分组,不要全局扁平化</b>:同一 key 在不同域可有不同文案——例如 <code>won/lost</code> 在 <code>dispute.status</code> 是“胜诉/败诉”、在 <code>opportunity.stage</code> 是“赢单/输单”;<code>pending</code> 在合规、退款、发票各有侧重。渲染时<b>按所在域取值</b>(如 <code>i18n['dispute.status']['won']</code>),不要用全局扁平表;若工程上用了全局表,在冲突处<b>就地覆盖文案</b>。⑥ 纯技术标识<b>不翻译</b>:Stripe 事件类型(<code>checkout.session.completed</code>)、KDM/ERP 动作名(<code>create_tenant</code>/<code>post_invoice</code>)、支付失败码等按行业惯例保留英文 snake_case。</div>
+  </div>
+
+  <div class="note green">
+    <b>v2 关键变化:</b>① 新增 <b>PRODUCT / SKU</b>(产品与价格分离,订单引用 SKU,币种从 SKU 带出);② 新增 <b>PAYMENT</b>(支付流水,每条=一次支付尝试,payment_failed 落此,订单 status 不污染);③ 新增 <b>ORDER_EVENT</b>(状态流转审计,只增不改);④ 每实体标 <b>SoT</b>:灵基后台权威,Stripe 仅支付执行;⑤ 合规明细在 COMPLIANCE_CHECK,订单只存汇总状态;⑥ 时间存 UTC、展示 GMT+8;金额用整数(分);点数用流水账本;⑦ 新增 <b>销售域(LEAD/OPPORTUNITY/CONTACT)</b>、<b>NOTIFICATION</b>(通知记录)、<b>SUPPORT_REQUEST</b>(售后工单,与售前 LEAD 分开)、<b>APPROVAL</b>(统一审批模型:退款/风控放行/红冲/协议发版,双人复核)与 <b>AUDIT_LOG</b>(操作审计);ORDER_EVENT 收敛为"订单状态历史"(订单详情时间线展示,不单设全局页)。
+  </div>
+  <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">配合 lingee-order-states.html(状态机)、lingee-walkthrough.html(总走查)。落地按实际技术栈调整。</p>
+</div>
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', securityLevel:'loose',
+    themeVariables:{ fontFamily:"-apple-system,'PingFang SC',sans-serif", fontSize:'11px' } });
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee 海外购买 · 待办清单 (TODO)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#6C5CE7;--ink:#21242F;--muted:#6B7080;--line:#E7E8F0;--bg:#F4F3FB;--card:#fff;
+  --p0:#DC2626;--p1:#E8820C;--p2:#2563EB;--p3:#16A34A}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
+.wrap{max-width:1240px;margin:0 auto;padding:30px 22px 70px}
+h1{font-size:25px;font-weight:800;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:13.5px;margin:8px 0 6px;max-width:880px}
+.meta{color:var(--muted);font-size:12px;margin-bottom:18px}
+
+/* legend / filters */
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--pri)}
+.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.dot{width:10px;height:10px;border-radius:3px}
+.d0{background:var(--p0)}.d1{background:var(--p1)}.d2{background:var(--p2)}.d3{background:var(--p3)}
+
+.legend{font-size:11.5px;color:var(--muted);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* group */
+.group{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:18px;overflow:hidden;box-shadow:0 4px 18px rgba(76,60,180,.05)}
+.group-h{padding:14px 18px;font-size:15px;font-weight:800;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;background:#FBFAFF}
+.group-h .ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;background:#F0EEFC}
+.group-h .cnt{font-size:11px;font-weight:600;color:var(--muted);margin-left:auto}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid #F2F2F8;vertical-align:top}
+th{background:#FAFAFE;font-weight:700;color:#475569;font-size:11.5px;position:sticky;top:0;z-index:1}
+tr:last-child td{border-bottom:none}
+tr.done td{opacity:.5;text-decoration:line-through}
+td .task{font-weight:700;color:var(--ink);display:block;margin-bottom:3px}
+td .desc{color:var(--muted);font-size:11.5px;line-height:1.5}
+.col-id{width:48px;color:var(--muted);font-weight:700}
+.col-task{min-width:230px}
+.col-owner{width:130px}
+.col-prio{width:88px}
+.col-impact{min-width:190px;color:#475569;font-size:11.5px}
+.col-st{width:52px;text-align:center}
+
+.pbadge{font-size:10.5px;font-weight:700;border-radius:6px;padding:3px 9px;white-space:nowrap;display:inline-block}
+.pb0{background:#FEE2E2;color:#991B1B}
+.pb1{background:#FFEDD5;color:#9A3412}
+.pb2{background:#DBEAFE;color:#1E40AF}
+.pb3{background:#DCFCE7;color:#166534}
+.owner{font-size:11.5px;font-weight:600;color:#3D426A;background:#EEF0FB;border-radius:6px;padding:2px 8px;display:inline-block}
+.chk{width:18px;height:18px;cursor:pointer;accent-color:var(--pri)}
+.note{font-size:11.5px;color:var(--muted);background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 15px;margin:6px 0 20px;color:#92400E}
+.foot{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lingee 海外购买 · 待办清单</h1>
+  <p class="lead">围绕"合法可售 + 自动开通 + 良好购买体验"的待办。按合规四维(法律/数据/税务/资金)+ 履约 + 体验分组。可勾选标记完成,点顶部优先级筛选。</p>
+  <p class="meta">主体:KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD. · 适用法:马来西亚 · 收款:Stripe · 最后更新:见各项</p>
+
+  <div class="legend">
+    <span><span class="dot d0"></span><b>P0 阻断级</b> 不做无法合法/安全售卖</span>
+    <span><span class="dot d1"></span><b>P1 高</b> 影响核心闭环/收入</span>
+    <span><span class="dot d2"></span><b>P2 中</b> 体验/运营</span>
+    <span><span class="dot d3"></span><b>P3 低</b> 优化项</span>
+  </div>
+
+  <div class="bar">
+    <span style="font-size:12px;color:var(--muted);font-weight:600">筛选优先级:</span>
+    <span class="chip on" data-f="all" onclick="filt(this,'all')">全部</span>
+    <span class="chip" data-f="P0" onclick="filt(this,'P0')"><span class="dot d0"></span>P0</span>
+    <span class="chip" data-f="P1" onclick="filt(this,'P1')"><span class="dot d1"></span>P1</span>
+    <span class="chip" data-f="P2" onclick="filt(this,'P2')"><span class="dot d2"></span>P2</span>
+    <span class="chip" data-f="P3" onclick="filt(this,'P3')"><span class="dot d3"></span>P3</span>
+  </div>
+
+  <div class="note">⚠️ 法律/税务类条目需<b>本地律师与财税顾问</b>最终确认;本清单为产品/项目推进用,不构成法律意见。</div>
+
+  <!-- 法律合规 -->
+  <div class="group" data-grp>
+    <div class="group-h"><span class="ico">⚖️</span> 法律合规 <span class="cnt">Legal</span></div>
+    <table>
+      <thead><tr><th class="col-id">#</th><th class="col-task">事项</th><th class="col-owner">负责人</th><th>作用</th><th class="col-prio">优先级</th><th class="col-impact">不做的影响</th><th class="col-st">完成</th></tr></thead>
+      <tbody>
+        <tr data-p="P0"><td class="col-id">L1</td><td class="col-task"><span class="task">订阅协议出马来正式版</span><span class="desc">法务把现协议主体/适用法改为马来 + AIAC,核对价格、点数、14天有效期等(我已给修订草稿)</span></td><td><span class="owner">法务</span></td><td>合同效力、争议解决依据</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">协议主体写错(现为新加坡),合同可能无效、争议无依据</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P0"><td class="col-id">L2</td><td class="col-task"><span class="task">同意存证落库</span><span class="desc">记录 谁/何时/协议版本号/IP/UA,勾选即存。同意主体 = 页面 Contact name + work email(下单/登录人),<b>不依赖 Stripe 付款姓名</b>(付款人可能与同意人不同,且同意发生在付款前)</span></td><td><span class="owner">研发</span></td><td>B2B 纠纷时证明客户已同意</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">无法举证客户同意,法律风险高</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P0"><td class="col-id">L3</td><td class="col-task"><span class="task">制裁/出口管制名单筛查(系统)</span><span class="desc">下单与支付后开通前各筛一次(企业名+国家),命中拒绝。受限国家在购买页国家下拉中排除,披露语已加免责</span></td><td><span class="owner">研发+合规</span></td><td>避免向受制裁对象售卖</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">违反国际制裁,重罚 + 声誉风险</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P0"><td class="col-id">L6</td><td class="col-task"><span class="task">制裁 + 出口管制合规评估(律师)</span><span class="desc">⚠️ 特殊性:中国研发技术 + 马来主体 + 美元结算 + 用 Stripe(美企) + AI 产品 → 大概率同时受 <b>美国 OFAC</b>、马来、联合国制裁约束,且 AI/中国技术可能涉<b>出口管制(非仅名单筛查)</b>。必须由懂跨境制裁/出口管制的律师评估:能卖到哪些国家、有无受管制成分、是否需许可。<br><b>已收到法务名单(后台「合规→受限清单」基础资料页 + data-model COMPLIANCE_CHECK 已落):</b>红线全面禁售(古巴/伊朗/朝鲜/叙利亚/俄罗斯/克里米亚/顿涅茨克/卢甘斯克)+ 灰名单 14 国(现按保守默认同红线自动拦)+ FATF 加强监控 21 国(不拦,只抬风险分)。三层均在购买页国家下拉 + Stripe(IP/账单/发卡国 + OFAC)落地。<b>SDN 人工复核标准:</b>仅当某单被标 manual_review 时,核对客户(公司+具名联系人)是否真命中 SDN 条目——确认命中拦截、误报放行,双人复核写审计。<b>待律师拍板:</b>俄罗斯是否被 Stripe 自动限制、灰名单是否逐国放行复核、AI/中国技术出口管制定性</span></td><td><span class="owner">法务+外部律师</span></td><td>确定合法销售边界(不只是筛名单)</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">误判可致违反美国出口管制/制裁,刑事+民事重罚</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">L4</td><td class="col-task"><span class="task">DPA / SLA / AUP 文档</span><span class="desc">数据处理协议、服务级别、可接受使用政策</span></td><td><span class="owner">法务</span></td><td>B2B 客户采购合规必需</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">大客户采购评审过不了,丢单</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">L5</td><td class="col-task"><span class="task">协议版本库 + 历史留痕</span><span class="desc">协议改版时旧版本可追溯,绑定到每条同意记录</span></td><td><span class="owner">研发</span></td><td>条款变更可审计</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">改版后无法证明客户当时同意的是哪版</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">L7</td><td class="col-task"><span class="task">Stripe OFAC 筛查开关 + 本地黑名单</span><span class="desc">在 Stripe 后台确认开启 OFAC/制裁筛查(对每笔付款自动比对持卡人,命中即拒,无需我方维护名单)。后台「受限清单 → 个人/实体」只维护一份很小的<b>本地黑名单</b>(我方因欺诈/拒付自行封禁的账户,字段:account_id/handling/reason/added_by/added_at,增删写审计)。可选:日后接入第三方公司名+出口管制筛查服务(命中转 manual_review)</span></td><td><span class="owner">研发+合规</span></td><td>制裁筛查靠 Stripe 自动,商业封禁靠本地黑名单</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">OFAC 开关没开 = 漏筛制裁对象;无本地黑名单 = 惯犯反复下单</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">L8</td><td class="col-task"><span class="task">确认俄罗斯 / FATF 在 Stripe 的落地方式</span><span class="desc">① 与 Stripe 核实俄罗斯是否被<b>自动限制</b>(不自动则确保我方拦截规则覆盖);② FATF 21 国<b>需在 Stripe Radar 手配复核规则</b>(Stripe 不认识 FATF 名单、不会自动加分),配好后在「受限清单 → 国家/地区」逐行标记「已同步」。受限清单的 Stripe 同步列即用于跟踪这件事的落地状态</span></td><td><span class="owner">研发+合规</span></td><td>确保名单真在 Stripe 生效,而非只躺在后台</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">以为配了实际没配 → 受限国家照样下单成功</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 税务合规 -->
+  <div class="group" data-grp>
+    <div class="group-h"><span class="ico">🧾</span> 税务合规 <span class="cnt">Tax</span></div>
+    <table>
+      <thead><tr><th class="col-id">#</th><th class="col-task">事项</th><th class="col-owner">负责人</th><th>作用</th><th class="col-prio">优先级</th><th class="col-impact">不做的影响</th><th class="col-st">完成</th></tr></thead>
+      <tbody>
+        <tr data-p="P0"><td class="col-id">T1</td><td class="col-task"><span class="task">对接 LHDN MyInvois 电子发票(按买方国家分流开票)</span><span class="desc">本地客户开标准 e-invoice(买方登记号/TIN 必填);海外客户跨境交易开 self-billed e-invoice(买方 TIN 用通用占位号 EI00000000010)。两类文档类型不同,均上报取合规号+二维码。<b>经马来本地 e-invoice 中间件(PEPPOL 接入点,如 Cleartax/IRIS 等)对接 LHDN——Stripe 不替你报 MyInvois,只出底票 PDF</b>。含退款<b>红冲(credit note)</b>上报,受 LHDN 调整时限约束</span></td><td><span class="owner">研发+财税</span></td><td>马来强制电子发票合规</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">开不出合规发票或开错类型,违反马来税法</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P0"><td class="col-id">T2</td><td class="col-task"><span class="task">SST / 出口零税率判定规则</span><span class="desc">马来境内收 SST,海外企业客户零税率/反向征收</span></td><td><span class="owner">财税+研发</span></td><td>税率算对,合规开票</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">税算错,少缴/多缴均违规</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">T6</td><td class="col-task"><span class="task">✅ 已定:前端字段统一收集 + 马来必填</span><span class="desc">所有客户均收集营业登记号/Tax ID;国家=马来时设为必填(MyInvois 要求),海外选填。购买页已实现</span></td><td><span class="owner">产品</span></td><td>满足开票字段要求且不增海外客户负担</td><td><span class="pbadge pb3">已确认</span></td><td class="col-impact">—(已落地)</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">T7</td><td class="col-task"><span class="task">确认可售国家范围 + 税务处理两套逻辑</span><span class="desc">购买页暂用「马来 + 新加坡 + 印尼 + Other/International」。需业务/合规拍板首批正式可售清单;后端税务只做两套:① 马来本地(SST+标准发票)② 海外出口(零税率+self-billed)。制裁/受限国家由风控筛查排除</span></td><td><span class="owner">业务+合规+财税</span></td><td>明确卖到哪、怎么开票/算税</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">范围不定则税务/合规边界模糊,可能误售受限国家</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">T3</td><td class="col-task"><span class="task">✅ 税率已建:手动 Tax Rate(Stripe Tax 不支持马来)</span><span class="desc">⚠️ Stripe Tax 不支持马来本地主体。已建手动税率「Malaysia SST 8%」,ID=<b>txr_1Tfc93AYtN4d3VHPgvmCZ3fN</b>。研发在 Checkout Session 按国家套用 tax_rates(马来套、海外不套=零税率)。SST 最终以 MyInvois 为准,建议财税确认</span></td><td><span class="owner">研发+财税</span></td><td>结账按国家正确计税</td><td><span class="pbadge pb3">部分完成</span></td><td class="col-impact">研发需按国家套用;不做则税额错误</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">T4</td><td class="col-task"><span class="task">税号校验</span><span class="desc">校验客户 Tax ID 真伪(SSM/UEN 等)</span></td><td><span class="owner">研发</span></td><td>支撑零税率/反向征收的真实性</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">假税号骗取免税,事后补税风险</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">T5</td><td class="col-task"><span class="task">跨境预提税(WHT)处理</span><span class="desc">部分国家跨境服务费需代扣预提税</span></td><td><span class="owner">财税</span></td><td>跨境收入合规</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">预提税处理不当,收入与税务对不平</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 数据合规 -->
+  <div class="group" data-grp>
+    <div class="group-h"><span class="ico">🔐</span> 数据合规 <span class="cnt">Data</span></div>
+    <table>
+      <thead><tr><th class="col-id">#</th><th class="col-task">事项</th><th class="col-owner">负责人</th><th>作用</th><th class="col-prio">优先级</th><th class="col-impact">不做的影响</th><th class="col-st">完成</th></tr></thead>
+      <tbody>
+        <tr data-p="P1"><td class="col-id">D1</td><td class="col-task"><span class="task">PDPA 合规 + 隐私政策</span><span class="desc">马来 PDPA + 客户所在国(新加坡/印尼等)数据法</span></td><td><span class="owner">法务+研发</span></td><td>个人数据处理合法</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">违反数据保护法,罚款 + 客户不信任</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">D2</td><td class="col-task"><span class="task">数据驻留区域明示</span><span class="desc">生产/沙箱租户部署区域,开通时与协议中告知</span></td><td><span class="owner">产品+研发</span></td><td>客户知情、满足驻留要求</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">客户合规要求不满足,大单受阻</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">D3</td><td class="col-task"><span class="task">子处理方清单(sub-processors)</span><span class="desc">列明 Stripe、云厂商、模型供应商等</span></td><td><span class="owner">法务</span></td><td>DPA 透明度要求</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">客户 DPA 审核缺项</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">D4</td><td class="col-task"><span class="task">私有 ERP 对接的数据流向授权</span><span class="desc">公有云灵基连客户星瀚/星空的数据出入境授权</span></td><td><span class="owner">产品+法务</span></td><td>跨系统数据流动合法</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">数据越权流动,合规与安全风险</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">D5</td><td class="col-task"><span class="task">收敛"数据合规"独立页</span><span class="desc">原后台「数据合规」页只有只读的驻留区域 + 子处理方清单、无日常运营动作,已撤销独立菜单。子处理方清单并入「协议库」作为 DPA 一部分;租户驻留区域在「订阅与租户」详情展示</span></td><td><span class="owner">产品</span></td><td>导航精简、内容归位到 DPA/租户</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">菜单冗余、运营找不到归属</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 资金合规 -->
+  <div class="group" data-grp>
+    <div class="group-h"><span class="ico">💰</span> 资金合规 <span class="cnt">Finance</span></div>
+    <table>
+      <thead><tr><th class="col-id">#</th><th class="col-task">事项</th><th class="col-owner">负责人</th><th>作用</th><th class="col-prio">优先级</th><th class="col-impact">不做的影响</th><th class="col-st">完成</th></tr></thead>
+      <tbody>
+        <tr data-p="P0"><td class="col-id">F1</td><td class="col-task"><span class="task">✅ 已完成:Stripe 账户 + KYB + 收款</span><span class="desc">商家验证文件 + 企业代表身份证明已通过,API Key 已交研发,已能收款到商户</span></td><td><span class="owner">财务+研发</span></td><td>能合法收款</td><td><span class="pbadge pb3">已完成</span></td><td class="col-impact">—(已激活)</td><td class="col-st"><input type="checkbox" class="chk" checked></td></tr>
+        <tr data-p="P1"><td class="col-id">F1a</td><td class="col-task"><span class="task">✅ 已配:支付方式 + 品牌</span><span class="desc">已启用 银行卡 / Apple Pay / Google Pay / GrabPay(马新) / FPX(马来) / Link;支付宝(中国)已取消(无中国大陆客户);银行转账暂不做(卡+FPX+钱包已覆盖)。Checkout 品牌已配 Logo + 紫色 #635bff</span></td><td><span class="owner">产品/财务</span></td><td>覆盖马来+跨境主流付款</td><td><span class="pbadge pb3">已确认</span></td><td class="col-impact">—(已配置,可后续按市场增减)</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P3"><td class="col-id">F6</td><td class="col-task"><span class="task">银行转账(后续按需)</span><span class="desc">如有对公转账需求大客户,再单独申请 Stripe 银行转账/虚拟账户</span></td><td><span class="owner">财务+研发</span></td><td>支持大额对公转账</td><td><span class="pbadge pb3">P3 低</span></td><td class="col-impact">暂无影响(当前不做)</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">F2</td><td class="col-task"><span class="task">收入确认(MFRS 15)接入 ERP</span><span class="desc">Lingee BC 推计费/履约事件,金蝶 ERP 按服务期分摊记账</span></td><td><span class="owner">财务+研发</span></td><td>订阅收入合规入账</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">收入一次性确认,财报错报</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">F3</td><td class="col-task"><span class="task">三方对账</span><span class="desc">Stripe 流水 ↔ Lingee BC 订单 ↔ 金蝶 ERP 入账</span></td><td><span class="owner">财务+研发</span></td><td>账实相符、可审计</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">对不上账,审计/资金风险</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">F4</td><td class="col-task"><span class="task">退款 / 拒付(chargeback)流程</span><span class="desc"><b>已细化设计:</b>退款三发起源(系统自动/客服发起/客户工单)→ 开通后退款需人工审批(填审批意见,写 AUDIT_LOG)→ 调 Stripe Refund API 原路退 → charge.refunded 触发环境回收(订阅取消·租户停用→保留期30天→销毁·席位回收·点数清零·发票红冲)。状态:pending_approval/rejected/pending/succeeded/failed。拒付走 charge.dispute.* 举证。<b>待开发落地</b></span></td><td><span class="owner">研发+财务</span></td><td>资金纠纷可控</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">退款无章法、拒付损失</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P3"><td class="col-id">F5</td><td class="col-task"><span class="task">多币种/FX 结算策略</span><span class="desc">USD 定价、本地币种支付的汇率与结算</span></td><td><span class="owner">财务</span></td><td>跨境收款汇兑清晰</td><td><span class="pbadge pb3">P3 低</span></td><td class="col-impact">汇兑损益不清</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">F7</td><td class="col-task"><span class="task">USD 定价 → MYR 结算 的换汇/对账/发票币种</span><span class="desc">已确认 Stripe 结算币种=MYR。客户付 USD,Stripe 换汇成 MYR 打款(有汇率+换汇费)。需处理:① 对账按 Stripe 回传的 USD金额 与实际 MYR payout 双口径(且 payout 为<b>扣手续费后净额</b>,毛/费/净三项);② <b>发票币种已定:MYR 为主(SST 以 MYR 报 LHDN)+ USD 辅并列,按开票日汇率换算 MYR(LHDN 要求,源用 BNM 开票日参考汇率);此汇率仅报税口径、不影响资金</b>;③ ERP 收入确认的记账汇率</span></td><td><span class="owner">财务+财税+研发</span></td><td>跨境收款账实相符、发票合规</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">不处理则对账对不平、发票币种不合规、汇兑损益不清</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 自动开通/履约 -->
+  <div class="group" data-grp>
+    <div class="group-h"><span class="ico">⚙️</span> 自动开通 / 履约 <span class="cnt">Fulfillment</span></div>
+    <table>
+      <thead><tr><th class="col-id">#</th><th class="col-task">事项</th><th class="col-owner">负责人</th><th>作用</th><th class="col-prio">优先级</th><th class="col-impact">不做的影响</th><th class="col-st">完成</th></tr></thead>
+      <tbody>
+        <tr data-p="P0"><td class="col-id">P1</td><td class="col-task"><span class="task">Stripe Webhook 处理器(幂等+重试)</span><span class="desc">payment_succeeded 等事件驱动开通,唯一约束去重</span></td><td><span class="owner">研发</span></td><td>支付→开通可靠</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">漏单/重复开通,转账支付直接漏</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">P0a</td><td class="col-task"><span class="task">支付集成方式:Stripe Embedded Checkout</span><span class="desc">采用站内嵌入式 Checkout(非整页跳转、非自建 Elements):收银台由 Stripe 提供并嵌在购买页内,卡号不经过我方服务器,本地支付方式/3DS/税号由 Stripe 处理。研发最终确认</span></td><td><span class="owner">研发</span></td><td>站内连贯体验 + 合规省力</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">选错(如自建 Elements)将大增开发与 PCI 合规负担</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P0"><td class="col-id">P2</td><td class="col-task"><span class="task">风控/合规闸(开通前)</span><span class="desc">Radar 评分 + 制裁筛查 + BIN/IP/地址交叉,通过才开通</span></td><td><span class="owner">研发+合规</span></td><td>不盲信、高风险拦截</td><td><span class="pbadge pb0">P0 阻断</span></td><td class="col-impact">"钱收了产品也开了"才发现欺诈/制裁</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">P3</td><td class="col-task"><span class="task">灵基 KDM 开通编排</span><span class="desc">自动建 1 生产 + 1 沙箱租户(隔离)、ERP 连接器</span></td><td><span class="owner">灵基平台</span></td><td>自动开通体验</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">需人工开通,慢、易错、不可扩展</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">P4</td><td class="col-task"><span class="task">权益服务(版本→功能映射)</span><span class="desc">专业版/高级版治理模块开关、@智能体权限</span></td><td><span class="owner">灵基平台</span></td><td>按版本开放能力</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">版本权益错配,越权或少给</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">P5</td><td class="col-task"><span class="task">点数账本 + 计量</span><span class="desc">赠送按月派发当月清零、增购随租期、用量计量、个人额度</span></td><td><span class="owner">灵基平台</span></td><td>点数发放与消耗准确</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">点数发错/算错,直接影响计费与体验</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">P6</td><td class="col-task"><span class="task">赠送点数按月派发定时任务</span><span class="desc">每月初派发 500/席,月底清零不结转</span></td><td><span class="owner">研发</span></td><td>赠送规则自动执行</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">赠送不到位或不清零,纠纷</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 购买体验/运营 -->
+  <div class="group" data-grp>
+    <div class="group-h"><span class="ico">🛒</span> 购买体验 / 运营 <span class="cnt">Experience</span></div>
+    <table>
+      <thead><tr><th class="col-id">#</th><th class="col-task">事项</th><th class="col-owner">负责人</th><th>作用</th><th class="col-prio">优先级</th><th class="col-impact">不做的影响</th><th class="col-st">完成</th></tr></thead>
+      <tbody>
+        <tr data-p="P1"><td class="col-id">X1</td><td class="col-task"><span class="task">订单状态机</span><span class="desc">待付/已付/风控/开通/失败/转账待确认/关闭/退款</span></td><td><span class="owner">研发</span></td><td>订单全生命周期可控</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">状态混乱,客服与对账困难</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">X2</td><td class="col-task"><span class="task">账号体系 + 购买权限</span><span class="desc">仅管理员可下单、登录态、试用升级身份打通</span></td><td><span class="owner">研发</span></td><td>确保有权人购买</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">非授权人下单,合同主体争议</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">X3</td><td class="col-task"><span class="task">自助管理后台</span><span class="desc">管席位、加购点数、看发票、续费、取消/退款</span></td><td><span class="owner">产品+研发</span></td><td>降低客服量、自助续费</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">全靠人工,运营成本高</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">X8</td><td class="col-task"><span class="task">开通后可修改开票信息 + 重开发票</span><span class="desc">税号/登记号/抬头填错时,客户在管理后台自助修改并触发重新开票(下单时不做税号校验,故必须有此补救入口)</span></td><td><span class="owner">产品+研发</span></td><td>填错可补救,避免开不出合规发票</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">既不校验又不能改 = 填错成死结,客户拿不到能报销的发票</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">X4</td><td class="col-task"><span class="task">续费 / 到期 / 催款提醒</span><span class="desc">到期前提醒、Stripe dunning、席位增减改配</span></td><td><span class="owner">产品+研发</span></td><td>提高续费率、减少流失</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">静默流失,收入流失</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">X5</td><td class="col-task"><span class="task">Premium quote-to-cash</span><span class="desc">面议→报价→合同→开票→开通的销售流程</span></td><td><span class="owner">销售+研发</span></td><td>大客户成交闭环</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">高价值大单无承接流程</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">X6</td><td class="col-task"><span class="task">邮件/通知体系</span><span class="desc">开通成功、登录链接、发票、催款等模板</span></td><td><span class="owner">研发</span></td><td>关键节点触达客户</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">客户收不到登录/发票,体验差</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">X11</td><td class="col-task"><span class="task">收发消息总账 MESSAGE_LOG(基础底账·先做)</span><span class="desc"><b>BC ↔ 客户所有收发先无条件全量落账</b>(出站:开通信/收据/发票/续费提醒/客服回复;入站:工单表单/邮件回信)。字段:direction(inbound/outbound)、channel(email/in_app/sms/web_form)、from/to、subject/body、category(单值·主用途)、account_id(锚点)、routing_status(routed/unmatched/pending)、delivery_status(出站回执)、provider_message_id(幂等去重+回执对账)。<b>多值关联拆子表 MESSAGE_LINK</b>(message_id + entity_type[account/order/invoice/subscription/support_request,可扩展] + entity_id + linked_by[system/human])——一条消息挂 N 个任意类型对象、加新类型不改表,linked_by 区分自动解析/人工归类。<b>category 与关联正交</b>(前者“是什么”、后者“关于谁”)。<b>这是运营基础 + 工单信息流来源 + 后续通知记录的底层</b>;争议(客户说没收到/我回了没人理)在此查原文。需集成邮件服务(出站发送 + 入站解析)。见 data-model MESSAGE_LOG / MESSAGE_LINK</span></td><td><span class="owner">研发</span></td><td>消息全留痕、可追溯、为工单/通知/运营分析打地基</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">不做则消息散落、对话拼不全、争议无据可查</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P2"><td class="col-id">X10</td><td class="col-task"><span class="task">售后工单 + 邮箱双向集成</span><span class="desc">购买页 Contact support 是<b>单向表单</b>(客户前端看不到回复),工单后续来回<b>全走邮件</b>。需集成<b>入站邮件解析</b>(inbound parse,如 SendGrid/Mailgun/SES):客服回复邮件发客户;客户回信靠 [SR-xxxx] 标记 / Reply-To support+SRxxxx@ 路由拉回。<b>工单对话流派生自 MESSAGE_LOG(X11)</b>——SUPPORT_MESSAGE 即总账中经 MESSAGE_LINK(entity_type=support_request)关联到某工单的记录,不再独立存正文。工单 = SUPPORT_REQUEST(主)+ 归类自总账的消息流</span></td><td><span class="owner">研发</span></td><td>售后问题不丢、可追踪、与售前 LEAD 分开</td><td><span class="pbadge pb2">P2 中</span></td><td class="col-impact">不做则客户回信散在公共邮箱、对话拼不全</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+        <tr data-p="P1"><td class="col-id">X9</td><td class="col-task"><span class="task">⚠️ 交接规范:前端禁止硬编码动态值</span><span class="desc">价格/税率/最小席位/有效期/主体/协议等必须接后台或 Stripe,不得写死。原型已用 DEMO_CFG 集中占位并标来源;研发对照 lingee-field-sources.html 逐项接入,QA 逐项走查</span></td><td><span class="owner">研发+QA</span></td><td>避免数据改了前端不变、靠走查才发现</td><td><span class="pbadge pb1">P1 高</span></td><td class="col-impact">历史踩坑:硬编码导致大量人工走查、上线后数据不一致</td><td class="col-st"><input type="checkbox" class="chk"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="foot">勾选状态保存在本机浏览器(localStorage)。需要新增条目随时告诉我。</p>
+</div>
+
+<script>
+function filt(el,p){
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+  document.querySelectorAll('tr[data-p]').forEach(function(r){
+    r.style.display = (p==='all'||r.getAttribute('data-p')===p) ? '' : 'none';
+  });
+  // hide empty groups
+  document.querySelectorAll('[data-grp]').forEach(function(g){
+    var any = g.querySelectorAll('tr[data-p]:not([style*="display: none"])').length;
+    g.style.display = any ? '' : 'none';
+  });
+}
+// persist checkboxes
+var KEY='lingee-todo';
+var saved = JSON.parse(localStorage.getItem(KEY)||'{}');
+document.querySelectorAll('tr[data-p]').forEach(function(r,i){
+  var cb=r.querySelector('.chk'); if(!cb) return;
+  var id=r.querySelector('.col-id').textContent.trim();
+  if(saved[id]){cb.checked=true;r.classList.add('done');}
+  cb.addEventListener('change',function(){
+    r.classList.toggle('done',cb.checked);
+    saved[id]=cb.checked; localStorage.setItem(KEY,JSON.stringify(saved));
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee 海外购买 · 全量走查(业务 → 系统 → 准备)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#6C5CE7;--ink:#21242F;--muted:#6B7080;--line:#E7E8F0;--bg:#F4F3FB;--card:#fff;--ok:#16A34A;--amber:#E8820C;--red:#DC2626;--blue:#2563EB}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+.layout{display:grid;grid-template-columns:240px 1fr;max-width:1280px;margin:0 auto}
+/* nav */
+.nav{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:24px 16px;border-right:1px solid var(--line);background:#fff}
+.nav h3{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:16px 0 6px}
+.nav h3:first-child{margin-top:0}
+.nav a{display:block;font-size:12.5px;color:#475569;text-decoration:none;padding:5px 9px;border-radius:7px}
+.nav a:hover{background:var(--bg);color:var(--pri)}
+.brand{font-size:15px;font-weight:800;color:var(--pri);margin-bottom:14px}
+/* content */
+.content{padding:34px 40px 90px;min-width:0}
+h1{font-size:26px;font-weight:800;letter-spacing:-.3px}
+.lead{color:var(--muted);font-size:13.5px;margin:8px 0 8px;max-width:860px}
+.meta{font-size:12px;color:var(--muted);margin-bottom:20px}
+section{scroll-margin-top:20px;margin-bottom:18px}
+.sec-h{font-size:19px;font-weight:800;margin:30px 0 4px;padding-top:14px;border-top:2px solid #ECEAFB;display:flex;align-items:center;gap:9px}
+.sec-h .n{width:26px;height:26px;border-radius:8px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.sub-h{font-size:15px;font-weight:800;margin:20px 0 8px;color:#312E81}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:0 3px 14px rgba(76,60,180,.04)}
+p{margin-bottom:8px}
+ul{margin:6px 0 6px 2px;list-style:none}
+li{padding:4px 0 4px 18px;position:relative;font-size:13px;color:#3D414E}
+li::before{content:'▸';position:absolute;left:0;color:var(--pri)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid #F0F0F6;vertical-align:top}
+th{background:#FAFAFE;font-weight:700;color:#475569;font-size:11.5px}
+code{background:#F3F1FE;color:#4338CA;border-radius:4px;padding:1px 6px;font-family:'SF Mono',Menlo,monospace;font-size:11.5px}
+.tag{font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.t-sot{background:#ECFDF3;color:#166534;border:1px solid #86EFAC}
+.t-stripe{background:#EEEDFF;color:#4338CA;border:1px solid #C7CBF5}
+.t-ext{background:#FFF4E6;color:#9A3412;border:1px solid #FDBA74}
+.pill{font-size:10.5px;font-weight:700;border-radius:6px;padding:2px 8px}
+.p0{background:#FEE2E2;color:#991B1B}.p1{background:#FFEDD5;color:#9A3412}.p2{background:#DBEAFE;color:#1E40AF}.done{background:#DCFCE7;color:#166534}
+.note{font-size:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:11px 14px;color:#92400E;margin:8px 0}
+.note.blue{background:#EEF2FF;border-color:#C7D2FE;color:#3730A3}
+.note.green{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+.links a{display:inline-block;font-size:12px;font-weight:600;color:var(--pri);text-decoration:none;border:1px solid #D9D6F5;border-radius:8px;padding:5px 11px;margin:3px 6px 3px 0}
+.links a:hover{background:var(--bg)}
+.flow{font-size:12px;color:#475569;background:#FAFAFE;border:1px solid var(--line);border-radius:9px;padding:12px 14px;line-height:2;font-family:'SF Mono',Menlo,monospace}
+@media(max-width:880px){.layout{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="brand">Lingee 海外购买 · 走查</div>
+    <h3>0 概览</h3>
+    <a href="#overview">业务背景与目标</a>
+    <a href="#docs">配套文档导航</a>
+    <h3>1 业务设计</h3>
+    <a href="#biz-pricing">定价与产品规则</a>
+    <a href="#biz-units">点数规则</a>
+    <a href="#biz-journey">购买旅程</a>
+    <a href="#biz-states">订单状态 & 状态页</a>
+    <a href="#biz-compliance">合规四维</a>
+    <h3>2 系统设计</h3>
+    <a href="#sys-arch">架构与边界</a>
+    <a href="#sys-data">数据模型</a>
+    <a href="#sys-tax">税务与支付</a>
+    <a href="#sys-provision">开通与履约</a>
+    <h3>3 准备工作</h3>
+    <a href="#prep-stripe">Stripe 配置</a>
+    <a href="#prep-legal">法律/财税</a>
+    <a href="#prep-dev">研发交接</a>
+    <a href="#prep-todo">待办与决策</a>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+    <h1>Lingee 海外购买 · 全量走查</h1>
+    <p class="lead">把分散在各专项文档里的内容,按 <b>业务设计 → 系统设计 → 准备工作</b> 串成一条主线,作为评审与开发的总纲。</p>
+    <p class="meta">经营主体:KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD. · 公有云 SaaS · B2B 跨境 · Stripe 收款 · 适用马来西亚法</p>
+
+    <!-- ============ 0 ============ -->
+    <section id="overview">
+      <div class="sec-h"><span class="n">0</span>业务背景与目标</div>
+      <div class="card">
+        <p><b>做什么:</b>一个海外自助购买灵基(Lingee)的站点 —— 选产品 → 填信息 → 下单支付 → 自动开通环境。</p>
+        <p><b>核心诉求:</b>① 客户体验顺畅、自助完成;② 法律/数据/税务/资金四类合规;③ 支付后自动开通产品;④ Stripe 处理收款及相关支付工作。</p>
+        <ul>
+          <li><b>两个版本:</b>Professional(自助,$15/席/月 或 $180/席/年,起售 5 席)、Premium(面议,起售 100 席,多 AI 财务部 + CEO 办公室治理能力)</li>
+          <li><b>点数:</b>$300/万点($0.03/点),最小 1 万点;每席每月赠送 500 点(仅生产、当月有效)</li>
+          <li><b>每套产品:</b>1 生产租户 + 1 沙箱租户(隔离),公有云;可连客户私有 ERP(星瀚/星空)</li>
+          <li><b>收款:</b>Stripe(卡/FPX/GrabPay/Apple/Google Pay/Link),USD 定价 → MYR 结算</li>
+        </ul>
+      </div>
+      <div class="note blue"><b>主数据源(SoT)原则:</b>灵基商业化后台是产品/订单/订阅/席位/点数/权益的<b>权威源</b>;Stripe 是支付执行层(支付结果/税额/结算回传以 Stripe 为准)。两边以 <code>stripe_*_id</code> 映射,靠 Webhook + 定时对账保持一致。<b>下单展示用灵基自己的产品目录,不实时查 Stripe。</b></div>
+    </section>
+
+    <section id="docs">
+      <div class="sub-h">配套文档导航</div>
+      <div class="card links">
+        <a href="lingee-overseas.html">🛒 购买原型</a>
+        <a href="lingee-architecture.html">🏗️ 架构与时序</a>
+        <a href="lingee-data-model.html">🗂️ 数据模型</a>
+        <a href="lingee-stripe-handoff.html">💳 Stripe 对接</a>
+        <a href="lingee-field-sources.html">🔢 动态字段清单</a>
+        <a href="lingee-admin-my.html">🖥️ 后台管理(马来)</a>
+        <a href="lingee-todolist.html">✅ 待办清单</a>
+      </div>
+      <p class="note blue" style="margin-top:10px"><b>📊 全部流程/时序/状态图集中在 <a href="lingee-architecture.html" style="color:var(--pri)">架构与时序</a></b>:系统架构图、端到端时序图、订单状态机、退款时序图、租户回收状态机、用户购买流程图、数据流转图(SoT 视角)。<b>ER 实体关系图</b>单独在 <a href="lingee-data-model.html" style="color:var(--pri)">数据模型</a>(与字段表配套)。</p>
+    </section>
+
+    <!-- ============ 1 业务设计 ============ -->
+    <section id="biz-pricing">
+      <div class="sec-h"><span class="n">1</span>业务设计</div>
+      <div class="sub-h">1.1 定价与产品规则</div>
+      <div class="card">
+        <table>
+          <tr><th>项</th><th>Professional</th><th>Premium</th></tr>
+          <tr><td>定价</td><td>$180/席/年 或 $15/席/月</td><td>面议(Custom)</td></tr>
+          <tr><td>起售席位</td><td>5</td><td>100</td></tr>
+          <tr><td>订阅周期</td><td>按月 / 按年,最多 3 年</td><td>合同约定</td></tr>
+          <tr><td>AI 财务部 / CEO 办公室</td><td>可 @ 使用智能体,<b>无</b>价值分析与运行治理</td><td><b>完整模块</b>含治理</td></tr>
+          <tr><td>购买方式</td><td>自助(本站)</td><td>联系销售 quote-to-cash</td></tr>
+        </table>
+        <p class="note">所有价格为<b>税前 USD</b>。Premium 不进入自助支付流程,选 Premium → 联系销售表单。</p>
+      </div>
+    </section>
+
+    <section id="biz-units">
+      <div class="sub-h">1.2 Lingee 点数规则</div>
+      <div class="card">
+        <ul>
+          <li><b>赠送:</b>每席每月 500 点 → <b>仅生产环境</b>、按月派发、当月有效、过期作废、不结转</li>
+          <li><b>增购:</b>$0.03/点($300/万点),最小 1 万点 → <b>生产 + 沙箱均可用</b>、可分配到人(个人额度上限内共享)、即时发放、随主合同租期有效、过期作废</li>
+          <li><b>记账:</b>点数用<b>流水账本</b>(POINT_LEDGER),赠送/增购分别按 expires_at 失效;余额由账本汇总</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="biz-journey">
+      <div class="sub-h">1.3 购买旅程</div>
+      <p style="font-size:13px;color:#475569;margin:0 0 6px"><b>A. Professional 自助(PLG,无销售):</b></p>
+      <div class="flow">
+        选产品/配置 → 填信息+勾选协议 →〔点 Continue:建待支付订单 + 同意存证〕→ Stripe 嵌入收银台付款<br>
+        → 支付成功(Webhook)→ 风控/合规闸 → 开通中(建租户/权益/点数)→ 开通成功(进入产品)
+      </div>
+      <p style="font-size:13px;color:#475569;margin:14px 0 6px"><b>B. Premium / 大客户面议(销售漏斗,quote-to-cash):</b></p>
+      <div class="flow">
+        点 Contact Sales / 申请试用 → <b>LEAD(线索)</b>:自动评分+建议、归并到已有客户<br>
+        → 销售跟进 <b>人工 Qualify</b> → <b>OPPORTUNITY(商机)</b>:报价/合同/定制 Stripe 发票<br>
+        → 赢单付款 → <b>转成 ORDER(订单)</b>(此刻才进 9 状态订单机)→ 开通 → SUBSCRIPTION/TENANT
+      </div>
+      <ul>
+        <li><b>建单时机:</b>点 "Continue to payment" 即创建订单(pending_payment)并落同意存证,再创建 Stripe Session</li>
+        <li><b>支付:</b>Stripe Embedded Checkout(站内嵌入,卡号不过我方服务器);账单地址、税、支付按钮均由 Stripe 收银台处理</li>
+        <li><b>开通:</b>由 Stripe Webhook <b>异步驱动</b>(不在前端回调里开通),先过风控闸再调灵基 KDM 开通</li>
+      </ul>
+      <div class="note blue"><b>对象主线(一条链,但<u>多入口</u>):</b><code>LEAD 线索</code> →(人工鉴定)→ <code>OPPORTUNITY 商机</code> →(赢单付款)→ <code>ORDER 订单</code> →(开通)→ <code>SUBSCRIPTION + TENANT 订阅/租户</code>。全程都挂在 <code>ACCOUNT 客户</code> + <code>CONTACT 联系人</code> 上,串成连续档案。<br><b>三种入口都合法(层级是"最长路径"不是"强制路径"):</b>① <b>自助直接建订单</b>——Professional PLG,无销售,不建线索/商机;② <b>销售直接建商机</b>——大客户线下/转介绍谈来,意向已确认,<code>OPPORTUNITY.lead_id</code> 可空,跳过线索;③ <b>线索逐层转化</b>——官网询价/申请试用/市场留资,先 LEAD → Qualify → 商机。<b>规则:任一层都可作起点,但不能回退(订单不倒退回商机);无论从哪进,都先归并到同一 ACCOUNT。</b></div>
+    </section>
+
+    <section id="biz-states">
+      <div class="sub-h">1.4 订单状态 & 状态页规范</div>
+      <div class="card">
+        <p><b>状态(ORDER.status,9 值):</b></p>
+        <table>
+          <tr><th>状态</th><th>含义</th><th>下一步引导</th></tr>
+          <tr><td><code>pending_payment</code></td><td>待支付(14天有效)</td><td>继续支付 / 稍后 / 取消(→cancelled)</td></tr>
+          <tr><td><code>under_review</code></td><td>已付款,确认中(风控)</td><td>等待,邮件通知(措辞中性)</td></tr>
+          <tr><td><code>provisioning</code></td><td>履约中(建租户/加席位/续期/减配)</td><td>等待(转圈,自动跳完成)</td></tr>
+          <tr><td><code>completed</code></td><td>已完成(履约动作完成)</td><td>进入生产/沙箱</td></tr>
+          <tr><td><code>rejected</code></td><td>合规拒绝,不可售</td><td>联系客服,全额退款</td></tr>
+          <tr><td><code>activation_failed</code></td><td>已付款但开通失败</td><td>联系客服,补开或退款</td></tr>
+          <tr><td><code>cancelled</code></td><td>客户主动取消</td><td>重新下单</td></tr>
+          <tr><td><code>closed</code></td><td>超时未付自动关闭</td><td>重新下单</td></tr>
+          <tr><td><code>refunded</code></td><td>已退款</td><td>后台/邮件体现</td></tr>
+        </table>
+        <p class="note"><code>payment_failed</code> 不是 status 值,是 pending 下"一次支付尝试失败"的展示(记在 PAYMENT 实体)。</p>
+
+        <p style="margin-top:12px"><b>状态页统一信息块(我的设计主张):</b></p>
+        <ul>
+          <li><b>A. 恒显示(订单身份):</b>Order no. · Order date (GMT+8) · Items(版本·周期·席位·增购点数 合并一行)· Subtotal (pre-tax, USD)</li>
+          <li><b>B. 按状态追加:</b>有效期(仅 pending)· 失败原因(payment_failed)· <b>Paid 含税实付/Stripe</b>(已付款类)· 服务期(completed)· 退款(rejected/activation_failed)</li>
+        </ul>
+        <div class="note blue"><b>主张要点:</b>① 配置细节(Billing/Seats/Gifted/Add-on)合并进 <code>Items</code> 一行,不平铺——状态页看"到哪了"而非重看配置;② 未付款只显示税前小计,已付款才显示 Stripe 回传含税 Paid(前端不算税);③ Gifted units 放成功页即可。</div>
+      </div>
+    </section>
+
+    <section id="biz-compliance">
+      <div class="sub-h">1.5 合规四维(业务红线)</div>
+      <div class="card">
+        <table>
+          <tr><th>维度</th><th>要点</th></tr>
+          <tr><td>法律</td><td>马来主体 + 马来法 + AIAC 仲裁;订阅协议定稿;<b>同意存证</b>(谁/时间/版本/IP);DPA/SLA</td></tr>
+          <tr><td>税务</td><td><b>MyInvois 强制电子发票</b>(本地标准票/海外 self-billed);马来 SST 8%、海外出口零税率;手动 Tax Rate</td></tr>
+          <tr><td>数据</td><td>PDPA;数据驻留区域明示;子处理方清单;连私有 ERP 的数据流向授权</td></tr>
+          <tr><td>资金</td><td>KYB;<b>履约对账(后台,流水↔订单,开通前置)</b>;收入确认 MFRS15 + 期末三方对账(金蝶 ERP);USD→MYR 换汇</td></tr>
+        </table>
+        <div class="note"><b>⚠️ 制裁/出口管制:</b>中国技术 + 马来主体 + 美元 + Stripe + AI 产品 → 大概率受美国 OFAC/出口管制约束,<b>必须专业律师评估</b>(不只是名单筛查)。受限国家在下拉排除 + 风控闸拦截。</div>
+        <div class="note green"><b>后台覆盖:</b>四维在 Lingee BC 后台均有运营视图——法律:Compliance&Risk(筛查)+ Consent Log(同意存证)+ Agreements&Versions(协议版本库,含子处理方清单作为 DPA 一部分);税务:Invoices·MyInvois;数据:租户驻留区域在「订阅与租户」详情展示、子处理方清单并入协议库 DPA(不单设"数据合规"页);资金:Reconciliation(对账)。<b>政策制定/律师定稿/DPA 签署属平台/法务侧,后台只做运营可见与执行。</b></div>
+      </div>
+    </section>
+
+    <!-- ============ 2 系统设计 ============ -->
+    <section id="sys-arch">
+      <div class="sec-h"><span class="n">2</span>系统设计</div>
+      <div class="sub-h">2.1 架构与边界(三层)</div>
+      <div class="card">
+        <ul>
+          <li><span class="tag t-sot">SoT 灵基</span> <b>Lingee BC(商业中心 / 商务层):</b>产品/SKU、订单、订阅、合规、Webhook、<b>履约对账(流水↔订单匹配)</b>、通知</li>
+          <li><b>灵基 KDM(产品/履约层):</b>建生产+沙箱租户、权益开关、点数派发与计量、ERP 连接器</li>
+          <li><span class="tag t-stripe">Stripe</span> <b>支付执行:</b>Checkout、Billing、发票、税额计算、退款</li>
+          <li><b>金蝶 ERP(财务大后端):</b>收款记账、MFRS15 收入确认、财报、<b>期末三方对账</b></li>
+          <li><span class="tag t-ext">外部</span> LHDN MyInvois、制裁名单、协议/DPA 版本库</li>
+        </ul>
+        <p class="note">支付成功 ≠ 立即开通:Webhook → <b>履约对账(流水↔订单匹配)+ 风控/合规闸</b>(Radar+制裁+受限国家)→ 都通过才调 KDM 开通。<b>履约对账在后台、秒级、不等 ERP;财务记账/对账在金蝶 ERP、开通后异步、不阻断。</b>详见 <a href="lingee-architecture.html" style="color:var(--pri)">架构与时序</a>。</p>
+      </div>
+    </section>
+
+    <section id="sys-data">
+      <div class="sub-h">2.2 数据模型(实体清单 + 主数据源)</div>
+      <div class="card">
+        <table>
+          <tr><th>域</th><th>实体</th><th>SoT</th><th>作用</th></tr>
+          <tr><td>商品</td><td><b>PRODUCT</b>(产品)/ <b>SKU</b>(可售变体+价格)</td><td><span class="tag t-sot">灵基</span>→同步Stripe</td><td>产品概念与价格解耦;订单引用 SKU(非 edition 枚举)</td></tr>
+          <tr><td rowspan="2">销售</td><td><b>LEAD</b>(线索)/ <b>OPPORTUNITY</b>(商机)</td><td><span class="tag t-sot">灵基/CRM</span></td><td>Premium「Contact Sales」落 LEAD;鉴定合格→OPPORTUNITY;赢单付款才转 ORDER</td></tr>
+          <tr><td><b>CONTACT</b>(联系人)</td><td><span class="tag t-sot">灵基</span></td><td>人挂在公司下(一公司多联系人)</td></tr>
+          <tr><td>客户</td><td>ACCOUNT(含 <code>lifecycle_stage</code>)</td><td><span class="tag t-sot">灵基</span></td><td>企业主体;生命周期 prospect/active/past_due/churned/suspended;收入动作(新购/增购/续费/减配)记在 ORDER.order_type;映射 stripe_customer_id。<b>后台「客户 360」页</b>以客户为中心聚合:身份+多联系人+多套订阅(各自独立权益)+订单历史+工单+累计消费(LTV),从订单/工单可反跳回此页(对齐 Salesforce Account 360 / Stripe Customer / Chargebee 做法)</td></tr>
+          <tr><td rowspan="5">订单</td><td><b>ORDER</b></td><td><span class="tag t-sot">灵基</span></td><td>交易主实体;税额/总额/结算额来自 Stripe 回传</td></tr>
+          <tr><td><b>ORDER_ITEM</b></td><td><span class="tag t-sot">灵基</span></td><td>引用 sku_id + <b>价格快照</b>(防改价影响历史单)</td></tr>
+          <tr><td><b>PAYMENT</b>(新)</td><td><span class="tag t-stripe">Stripe</span>镜像</td><td>支付流水(每条=一次支付尝试,=Stripe PaymentIntent),<b>按每次支付动作一条</b>;<code>payment_failed</code> 在此,订单仍 pending</td></tr>
+          <tr><td><b>REFUND / DISPUTE</b>(新)</td><td><span class="tag t-stripe">Stripe</span>镜像</td><td>退款(可多次部分退)/ 拒付,<b>挂在 PAYMENT 下的子记录</b>(业内分层)</td></tr>
+          <tr><td><b>ORDER_EVENT</b>(新)</td><td><span class="tag t-sot">灵基</span></td><td>订单<b>状态历史</b>(只增不改),订单详情时间线展示</td></tr>
+          <tr><td rowspan="4">履约</td><td>SUBSCRIPTION</td><td><span class="tag t-sot">灵基</span>(+stripe_sub_id)</td><td>自己 id + Stripe id 两个</td></tr>
+          <tr><td>TENANT</td><td><span class="tag t-sot">灵基KDM</span></td><td>生产/沙箱</td></tr>
+          <tr><td>SEAT</td><td><span class="tag t-sot">灵基KDM</span></td><td>席位分配/个人点数上限</td></tr>
+          <tr><td>POINT_LEDGER</td><td><span class="tag t-sot">灵基KDM</span></td><td>点数流水(赠送/增购/消耗/过期)</td></tr>
+          <tr><td rowspan="4">财税合规</td><td>INVOICE</td><td>灵基+Stripe</td><td>发票凭证</td></tr>
+          <tr><td>EINVOICE_SUBMISSION</td><td><span class="tag t-ext">LHDN</span></td><td>MyInvois 合规上报</td></tr>
+          <tr><td>CONSENT_LOG</td><td><span class="tag t-sot">灵基</span></td><td>同意存证</td></tr>
+          <tr><td>COMPLIANCE_CHECK</td><td><span class="tag t-sot">灵基</span></td><td>制裁/出口/税号校验明细</td></tr>
+          <tr><td rowspan="5">集成</td><td>WEBHOOK_EVENT</td><td><span class="tag t-stripe">Stripe</span></td><td>幂等去重(event_id 唯一)</td></tr>
+          <tr><td><b>MESSAGE_LOG</b>(收发消息总账)</td><td><span class="tag t-sot">灵基</span></td><td><b>BC↔客户所有收发全量留痕</b>(出/入站、邮件/站内/表单),先存后归类;<b>工单对话与通知记录的底层</b>,争议可查原文;前台可查</td></tr>
+          <tr><td><b>MESSAGE_LINK</b>(消息关联·多态)</td><td><span class="tag t-sot">灵基</span></td><td>一条消息挂 N 个任意类型对象(account/order/invoice/subscription/support_request,可扩展)+ linked_by(system/human);<b>多关联与 category 正交</b>(“关于谁”vs“是什么”)</td></tr>
+          <tr><td><b>NOTIFICATION</b>(通知记录)</td><td><span class="tag t-sot">灵基</span></td><td>给谁/何时/发了什么/是否送达;客服排查未收到(下一期;为消息总账的业务视图)</td></tr>
+          <tr><td><b>SUPPORT_REQUEST</b>(售后工单)</td><td><span class="tag t-sot">灵基</span></td><td>客户就已购服务发起的问题(开通/退款/开票);<b>以客户为中心、按权益(订阅)为单位</b>,可下钻到订单;<b>对话流派生自消息总账</b>;与售前 LEAD 分开</td></tr>
+          <tr><td>合规审计</td><td><b>AUDIT_LOG</b>(操作审计)</td><td><span class="tag t-sot">灵基</span></td><td>人的敏感操作(退款/改开票/放行风控/改版本/导出);与状态历史分开</td></tr>
+          <tr><td>审批</td><td><b>APPROVAL</b>(审批记录)</td><td><span class="tag t-sot">灵基</span></td><td>统一审批模型:退款/风控放行/红冲/协议发版;双人复核(发起≠审批)+ 审批意见;支撑「待审批」工作台</td></tr>
+        </table>
+        <div class="note green"><b>关键建模决策:</b>① 产品=PRODUCT、变体价格=SKU,<b>分开</b>;② 币种从 SKU 带出(USD),结算币种 MYR 来自 Stripe 账户/payout 回传;③ <code>payment_failed</code> 用 PAYMENT 实体表达,不污染订单 status;④ 合规/风控明细在 COMPLIANCE_CHECK,订单只存汇总 compliance_status;⑤ 金额用整数(分),点数用流水账本;⑥ <b>履约域(SUBSCRIPTION/TENANT/SEAT/POINT_LEDGER)SoT=灵基 KDM</b>,BC 仅引用与展示、不存权威字段、不在 BC 改(故 BC 后台不设点数账本页)。完整字段见 <a href="lingee-data-model.html" style="color:var(--pri)">数据模型</a>。</div>
+        <p><b>"何时写日志 vs 落实体":</b>有业务/法律/财务意义的状态 → 落实体字段(status/close_reason/时间戳);每次流转 → 写 ORDER_EVENT 审计日志(只增不改);纯技术细节(Webhook原始包/重试)→ 进日志系统。</p>
+      </div>
+    </section>
+
+    <section id="sys-tax">
+      <div class="sub-h">2.3 税务与支付机制</div>
+      <div class="card">
+        <ul>
+          <li><b>支付集成:</b>Stripe <b>Embedded Checkout</b>(站内嵌入)。前端 Step2 点继续 → 后端建 Session(ui_mode:embedded)→ 前端挂载收银台</li>
+          <li><b>税:</b>Stripe Tax 不支持马来主体 → 用<b>手动 Tax Rate + dynamic_tax_rates</b>。已建 <code>txr_1Tfc93AYtN4d3VHPgvmCZ3fN</code>(Malaysia SST 8%);Stripe 按<b>账单地址</b>自动匹配:马来套 SST、海外零税率。前端不判断、不算税</li>
+          <li><b>金额:</b>未付款显示税前小计;含税总额由 Stripe 收银台显示;付款后 Webhook 回传 amount_subtotal/tax/total 入库</li>
+          <li><b>币种:</b>USD 定价收款 → Stripe 换汇 <b>MYR 结算</b>到马来账户(汇率+换汇费,财务关注)</li>
+          <li><b>时区:</b>存 UTC,展示<b>马来时间 GMT+8</b> 并标注;开票/对账以马来时间为准</li>
+        </ul>
+        <p class="note">详见 <a href="lingee-stripe-handoff.html" style="color:var(--pri)">Stripe 对接</a> 与 <a href="lingee-field-sources.html" style="color:var(--pri)">动态字段清单</a>(禁止前端硬编码)。</p>
+      </div>
+    </section>
+
+    <section id="sys-provision">
+      <div class="sub-h">2.4 开通与履约</div>
+      <div class="card">
+        <ul>
+          <li>Webhook <code>checkout.session.completed</code> → 验签/幂等 → <b>履约对账(流水↔订单匹配)</b> → 风控闸 → <b>TID/SN 对齐闸(问 KBC:该客户已有该产品订阅?→ 增购挂已有租户 / 新购建租户;冲突转人工、KBC 超时进待开通队列,防"线下新购+线上增购开出两个租户")</b> → 都通过则调灵基 KDM</li>
+          <li>KDM:建 1 生产 + 1 沙箱租户(隔离)→ 按版本开权益 → 派发赠送点数 + 注入增购点数 + 启用计量</li>
+          <li>赠送点数:<b>按月定时任务</b>派发 500/席,月底清零</li>
+          <li>开通失败 → activation_failed(已付款,补开或退款,不让客户钱付了没东西)</li>
+          <li>财税:生成发票 → 上报 MyInvois;<b>开通后异步</b>推计费/履约事件给金蝶 ERP 做收款记账 + MFRS15 收入确认 + 期末三方对账(不阻断开通)</li>
+          <li><b>退款后环境回收</b>(KDM 编排,"停用→保留期→销毁"):退款成功触发 → SUBSCRIPTION 置 canceled、TENANT 生产+沙箱 suspended → 保留期(默认 30 天,只读供导出/反悔)→ terminated(删除/匿名化数据)、SEAT 置 revoked、增购点数 POINT_LEDGER 写 revoke 清零、退订 Stripe 订阅防再扣、发票红冲(MyInvois credit note)、ERP 冲减收入,并写 ORDER_EVENT + AUDIT_LOG + 发退款确认通知。合规拒绝时环境未建、无需回收;开通失败清理半成品。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 3 准备工作 ============ -->
+    <section id="prep-stripe">
+      <div class="sec-h"><span class="n">3</span>准备工作</div>
+      <div class="sub-h">3.1 Stripe 配置</div>
+      <div class="card">
+        <table>
+          <tr><th>项</th><th>状态</th></tr>
+          <tr><td>账户 KYB(主体认证)</td><td><span class="pill done">已完成</span></td></tr>
+          <tr><td>产品 + 3 个价格($15月/$180年/$300点数包)</td><td><span class="pill done">已完成</span></td></tr>
+          <tr><td>支付方式(卡/Apple/Google Pay/GrabPay/FPX/Link)</td><td><span class="pill done">已完成</span></td></tr>
+          <tr><td>品牌 Logo + 紫色;集成方式=Embedded Checkout</td><td><span class="pill done">已完成</span></td></tr>
+          <tr><td>手动税率 Malaysia SST 8%(txr_…)</td><td><span class="pill done">已完成</span></td></tr>
+          <tr><td>API Keys 交研发 / 已能收款</td><td><span class="pill done">已完成</span></td></tr>
+          <tr><td>Webhook 端点 + signing secret</td><td><span class="pill p1">待办</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="prep-legal">
+      <div class="sub-h">3.2 法律 / 财税(需外部专业方)</div>
+      <div class="card">
+        <ul>
+          <li><span class="pill p0">P0</span> 订阅协议出马来正式版(主体/马来法/AIAC,法务定稿)</li>
+          <li><span class="pill p0">P0</span> 制裁 + 出口管制合规评估(律师,针对中国技术/美元/AI 特殊性)</li>
+          <li><span class="pill p0">P0</span> MyInvois 电子发票对接方案(本地标准 + 海外 self-billed)+ SST 口径确认</li>
+          <li><span class="pill p1">P1</span> DPA/SLA/隐私政策;USD→MYR 换汇与发票币种;MFRS15 收入确认对接 ERP</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="prep-dev">
+      <div class="sub-h">3.3 研发交接</div>
+      <div class="card">
+        <ul>
+          <li>建单时机:Continue to payment → 建 pending 订单 + 同意存证 → 创建 Embedded Checkout Session</li>
+          <li>Webhook 幂等 + 风控闸 + 调 KDM 开通(全自动)</li>
+          <li><b>禁止前端硬编码</b>动态值(价格/税率/主体等),对照动态字段清单接入</li>
+          <li>状态机 9 态 + PAYMENT/ORDER_EVENT 落地;时间存 UTC 展示 GMT+8</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="prep-todo">
+      <div class="sub-h">3.4 待办与待拍板决策</div>
+      <div class="card">
+        <p><b>仍需业务/老板/法务拍板:</b></p>
+        <ul>
+          <li>协议定稿(法务)· 可售国家白名单 · MyInvois 方案 · 制裁/出口管制律师评估</li>
+          <li>USD→MYR 换汇与发票币种口径(财税)</li>
+        </ul>
+        <p>完整任务、优先级、负责人见 <a href="lingee-todolist.html" style="color:var(--pri)">待办清单</a>。</p>
+      </div>
+      <div class="note green" style="margin-top:8px">本走查为总纲;每个主题的细节都在对应专项文档中,本页提供主线与导航。</div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

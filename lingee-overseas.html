@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingee · Buy Online (Overseas)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --indigo:#6366F1; --indigo-d:#4F46E5; --indigo-l:#818CF8;
+  --ink:#0F172A; --muted:#64748B; --line:#E7E8F0;
+  --bg1:#F5F3FF; --bg2:#FAFAFE; --green:#16A34A; --amber:#F59E0B; --red:#DC2626;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,'PingFang SC',sans-serif;background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);color:var(--ink);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased;display:flex;padding:28px 16px}
+.wrap{max-width:1040px;width:100%;margin:auto;padding-bottom:90px}
+a{color:inherit}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:var(--indigo)}
+.brand small{font-size:11px;color:var(--muted);font-weight:500}
+.topbar .acct{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.trust-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 14px;margin-bottom:24px}
+.trust-bar b{color:#334155;font-weight:600}
+.trust-dot{width:4px;height:4px;border-radius:50%;background:#CBD5E1}
+
+/* ---------- scenes ---------- */
+.scene{display:none;animation:fade .25s ease}
+.scene.active{display:block}
+.scene.narrow{max-width:560px;margin-left:auto;margin-right:auto}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- generic ---------- */
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 14px rgba(99,102,241,.06)}
+.h-center{text-align:center}
+.muted{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 22px;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;transition:.15s;text-decoration:none}
+@property --gx{syntax:'<length-percentage>';inherits:false;initial-value:50%}
+@property --gy{syntax:'<length-percentage>';inherits:false;initial-value:50%}
+@property --glow{syntax:'<number>';inherits:false;initial-value:0}
+.btn-primary{
+  --gx:50%;--gy:50%;--glow:0;
+  position:relative;overflow:hidden;color:#fff;
+  background:
+    radial-gradient(90px circle at var(--gx) var(--gy), rgba(255,255,255,calc(.28*var(--glow))), rgba(255,255,255,0) 45%),
+    linear-gradient(100deg,#7C6CF0 0%,#6366F1 42%,#3B82F6 100%);
+  box-shadow:0 8px 22px rgba(91,99,235,.30);
+  transition:--glow .3s ease,box-shadow .2s ease,transform .12s ease;
+}
+.btn-primary:hover{--glow:1;box-shadow:0 12px 30px rgba(91,99,235,.42);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{--glow:0;background:#C7CBE0;box-shadow:none;cursor:not-allowed;transform:none}
+.btn-dark{background:#fff;color:#1E2330;border:1px solid #E6E7EE;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.btn-dark:hover{border-color:#CBD0DE;background:#FCFCFE;box-shadow:0 4px 12px rgba(16,24,40,.08)}
+.btn-outline{background:#fff;color:#334155;border:1px solid #D5D8E3}
+.btn-outline:hover{border-color:var(--indigo);color:var(--indigo)}
+.btn-ghost{background:transparent;color:var(--indigo);border:1px solid var(--indigo)}
+.btn-ghost:hover{background:var(--bg1)}
+.btn-row{display:flex;gap:12px;justify-content:space-between;margin-top:22px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 11px;border-radius:999px;font-size:11px;font-weight:700}
+
+/* ---------- pricing ---------- */
+.price-head{text-align:center;margin:18px 0 34px}
+.price-head h1{font-size:32px;font-weight:800;letter-spacing:-.5px}
+/* blue→purple gradient text */
+.grad-text{
+  background:linear-gradient(95deg,#2563EB 0%,#6366F1 50%,#9333EA 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.price-head p{color:var(--muted);font-size:14px;margin-top:8px}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+.tier{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 22px;display:flex;flex-direction:column}
+.tier.pop{border:2px solid var(--indigo);box-shadow:0 18px 44px rgba(99,102,241,.16);transform:translateY(-6px)}
+.tier .badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--indigo-l),var(--indigo));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px}
+.tier .name{font-size:16px;font-weight:800;text-align:center}
+.tier.pop .name{color:var(--indigo)}
+.tier.prem .name{color:#C2410C}
+.tier .tag{text-align:center;font-size:12px;color:var(--muted);margin-top:3px;min-height:32px}
+.tier .price{text-align:center;margin:14px 0 2px}
+.tier .price .amt{font-size:40px;font-weight:800;letter-spacing:-1px}
+.tier .price .amt.custom{color:#d97706}
+.tier .price .per{font-size:13px;color:var(--muted);font-weight:500}
+.tier .submeta{text-align:center;font-size:11.5px;color:var(--muted);line-height:1.7;min-height:46px;margin-bottom:16px}
+.tier .submeta b{color:#334155}
+.tier .cta{width:100%;margin-bottom:18px}
+.feat{list-style:none;display:flex;flex-direction:column;gap:11px}
+.feat li{display:flex;gap:9px;font-size:12.5px;line-height:1.55;color:#475569}
+.feat li svg{flex-shrink:0;margin-top:2px}
+.feat li b{color:var(--ink);font-weight:600}
+.feat li.no{color:#94A3B8}
+.feat-divider{border:0;border-top:1px dashed var(--line);margin:4px 0}
+
+/* add-on + info row */
+.info-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.mini-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.mini-card h3{font-size:14px;font-weight:700;margin-bottom:4px}
+.mini-card .sub{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+.unit-tbl{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12px}
+.unit-tbl .r{display:grid;grid-template-columns:1fr auto;padding:9px 13px;border-bottom:1px solid #F1F2F7}
+.unit-tbl .r:last-child{border-bottom:none}
+.unit-tbl .r.hd{background:#FAFAFE;font-weight:600;color:#475569}
+.rules{font-size:11.5px;color:#475569;line-height:1.95}
+.rules b{color:var(--ink)}
+
+/* ---------- steps ---------- */
+.steps{display:flex;align-items:center;justify-content:center;margin:6px 0 28px}
+.step{display:flex;align-items:center;gap:7px;font-size:12px;color:#A3A8C0}
+.step .dot{width:24px;height:24px;border-radius:50%;background:#EDEEF6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#9aa0bd}
+.step.active{color:var(--ink);font-weight:700}
+.step.active .dot{background:var(--indigo);color:#fff}
+.step.done{color:var(--green)}
+.step.done .dot{background:var(--green);color:#fff}
+.step-bar{width:46px;height:2px;background:#E9EAF2;margin:0 8px;border-radius:2px}
+
+/* ---------- forms ---------- */
+.panel{display:none}
+.panel.active{display:block}
+.sec-title{font-size:16px;font-weight:700;margin-bottom:3px}
+.sec-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+.frow{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.field{flex:1;min-width:200px}
+.field.full{flex-basis:100%}
+.field label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
+.field label .req{color:var(--red);margin-left:2px}
+.field input,.field select{width:100%;height:40px;border:1px solid #D5D8E3;border-radius:10px;padding:0 12px;font-size:13.5px;outline:none;background:#fff;transition:.15s}
+.field input:focus,.field select:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.field input:disabled{background:#F3F4F9;color:#64748B}
+.field .hint{font-size:11px;color:#94A3B8;margin-top:5px}
+.field .ok{font-size:11px;color:var(--green);margin-top:5px}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid #D5D8E3;border-radius:10px;overflow:hidden;width:max-content}
+.stepper button{width:40px;height:40px;border:none;background:#F7F8FC;font-size:18px;cursor:pointer;color:#475569}
+.stepper button:hover{background:#EEF0F8;color:var(--indigo)}
+.stepper input{width:84px;height:40px;border:none;border-left:1px solid #E7E8F0;border-right:1px solid #E7E8F0;text-align:center;font-size:14px;font-weight:600;outline:none}
+
+/* edition toggle */
+.edition-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.ed-card{border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;cursor:pointer;transition:.15s;position:relative;background:#fff}
+.ed-card:hover{border-color:var(--indigo-l)}
+.ed-card.sel{border-color:var(--indigo);background:var(--bg1)}
+.ed-card .ed-name{font-size:15px;font-weight:800}
+.ed-card .ed-price{font-size:13px;color:var(--muted);margin-top:2px}
+.ed-card .ed-desc{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6}
+.ed-card .ed-check{position:absolute;top:14px;right:14px;width:20px;height:20px;border-radius:50%;border:2px solid #D5D8E3;display:flex;align-items:center;justify-content:center}
+.ed-card.sel .ed-check{border-color:var(--indigo);background:var(--indigo)}
+.ed-card.sel .ed-check::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+
+/* cycle toggle */
+.seg{display:inline-flex;background:#F1F2F8;border-radius:10px;padding:4px;gap:4px}
+.seg button{border:none;background:transparent;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;transition:.15s}
+.seg button.on{background:#fff;color:var(--indigo);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.seg .save{font-size:10px;color:var(--green);margin-left:4px}
+
+/* summary */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.summary{position:sticky;top:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 26px rgba(99,102,241,.08)}
+.summary h3{font-size:14px;font-weight:700;margin-bottom:14px}
+.sline{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#475569;padding:7px 0}
+.sline .v{font-weight:600;color:var(--ink);text-align:right}
+.sdiv{height:1px;background:var(--line);margin:8px 0}
+.stotal{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#475569;padding-top:4px}
+.stotal .big{font-size:24px;font-weight:800;color:var(--ink);line-height:1.1}
+.tax-note{font-size:11px;color:#94A3B8;margin-top:10px;line-height:1.6}
+
+/* alerts */
+.alert{padding:12px 15px;border-radius:10px;font-size:12.5px;line-height:1.65;margin-bottom:14px}
+.alert b{font-weight:700}
+.alert-info{background:#EEF2FF;border:1px solid #C7D2FE;color:#3730A3}
+.alert-warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+.alert-ok{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534}
+
+/* agreement */
+.agree{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:#475569;margin-bottom:6px}
+.agree input{margin-top:2px;accent-color:var(--indigo);width:16px;height:16px}
+.agree a{color:var(--indigo);text-decoration:none;font-weight:600}
+
+/* stripe */
+.embed-banner{display:flex;align-items:flex-start;gap:9px;background:#F1F0FE;border:1px solid #D9D6FB;border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:#3D366B;line-height:1.55}
+.embed-banner b{color:#4F46E5}
+.embed-render{border:1.5px dashed #C9C4F0;border-radius:12px;padding:16px;background:#FCFBFF;position:relative}
+.embed-render-tag{font-size:10.5px;font-weight:700;color:#6C5CE7;letter-spacing:.3px;margin-bottom:12px;text-transform:uppercase}
+.srow{display:flex;flex-wrap:wrap;gap:8px}
+.schip{font-size:12px;font-weight:600;color:#475569;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:8px 13px}
+.schip.sel{border-color:var(--indigo);background:var(--pri-soft,#F2F0FE);color:var(--indigo)}
+.embed-render input[readonly]{background:#fff;color:#475569;cursor:default}
+.stripe-box{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stripe-top{background:linear-gradient(135deg,#635BFF,#4F46E5);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.stripe-top .lock{display:flex;align-items:center;gap:7px;font-size:12px;opacity:.92}
+.stripe-amt{font-size:22px;font-weight:800}
+.stripe-body{padding:22px 20px}
+.card-input{position:relative}
+.card-input .brands{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;gap:5px}
+.card-input .brands span{font-size:9px;font-weight:800;color:#fff;padding:2px 5px;border-radius:3px}
+.pm-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.pm-tab{flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;color:#475569;transition:.15s}
+.pm-tab.sel{border-color:var(--indigo);background:var(--bg1);color:var(--indigo)}
+.pm-ico{width:30px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+
+/* timeline */
+.tl{margin-top:18px;max-width:480px;margin-left:auto;margin-right:auto}
+.tl-item{display:flex;gap:13px;padding:11px 0;position:relative}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:12px;top:34px;bottom:-2px;width:2px;background:#E9EAF2}
+.tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;font-weight:700;z-index:1}
+.tl-dot.done{background:var(--green);color:#fff}
+.tl-dot.cur{background:var(--indigo);color:#fff;animation:pulse 1.2s infinite}
+.tl-dot.pend{background:#F1F2F8;border:1px solid #D5D8E3;color:#A3A8C0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.4)}50%{box-shadow:0 0 0 6px rgba(99,102,241,0)}}
+.tl-c .t{font-size:13px;font-weight:600}
+.tl-c .d{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* status hero */
+.hero{text-align:center;padding:26px 20px}
+.hero .ic{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;color:#fff}
+.hero .ic.green{background:var(--green)}
+.hero .ic.indigo{background:var(--indigo)}
+.hero h2{font-size:19px;font-weight:800;margin-bottom:6px}
+.hero p{font-size:13px;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.7}
+
+/* tenant cards */
+.tenants{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.tenant{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:#fff}
+.tenant .badge2{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;margin-bottom:10px}
+.tenant.prod .badge2{background:#ECFDF5;color:#047857}
+.tenant.sbx .badge2{background:#EEF2FF;color:#4338CA}
+.tenant .url{font-size:12.5px;font-weight:600;color:var(--indigo);word-break:break-all}
+.tenant .rows{margin-top:10px;font-size:11.5px;color:#475569;line-height:1.9}
+.tenant .rows span{color:#94A3B8}
+
+/* info table */
+.kv{max-width:460px;margin:18px auto 0}
+.kv .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F2F7;font-size:13px}
+.kv .row:last-child{border-bottom:none}
+.kv .row .l{color:var(--muted)}
+.kv .row .r{font-weight:600}
+.kv .row .r.hl{color:var(--indigo)}
+
+/* demo dock — DEV/DEMO ONLY · floating, never affects layout · DELETE this block + the .dock markup when embedding in-product */
+.dock{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:8000;width:min(1040px,calc(100% - 32px));background:rgba(15,23,42,.96);backdrop-filter:blur(6px);border-radius:12px;padding:12px 16px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.dock .grp{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.dock .grp:last-child{margin-bottom:0}
+.dock .lbl{font-size:11px;color:#94A3B8;margin-right:6px;min-width:104px}
+.dock button{padding:5px 11px;border-radius:6px;border:1px solid #334155;background:transparent;color:#E2E8F0;font-size:11px;cursor:pointer;transition:.15s}
+.dock button:hover{background:#1E293B}
+.dock button.k{border-color:var(--indigo);background:var(--indigo);color:#fff}
+
+/* modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.modal-hd{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal-hd .x{cursor:pointer;font-size:22px;color:#94A3B8;line-height:1}
+.modal-bd{padding:22px 26px;overflow-y:auto;font-size:13px;color:#334155;line-height:1.95}
+.modal-bd p{margin-bottom:10px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--line);text-align:right}
+.modal-ft.center{text-align:center}
+
+/* agreement document styling */
+.agr-title{text-align:center;font-size:18px;font-weight:800;margin:6px 0 10px}
+.agr-meta{text-align:center;color:var(--muted);font-size:12px;margin-bottom:4px}
+.agr-meta.prod{margin-bottom:18px}
+.agr-rule{border:0;border-top:1px solid var(--line);margin:0 0 18px}
+.agr-callout{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:13px 16px;font-size:12.5px;font-weight:600;color:#92400E;line-height:1.6;margin-bottom:16px}
+.agr-intro{font-size:12.5px;color:#475569;margin-bottom:18px}
+.agr-intro b{color:var(--ink)}
+.agr-h{font-size:14px;font-weight:800;color:var(--ink);margin:18px 0 8px;padding-left:11px;border-left:3px solid var(--indigo)}
+.agr-p{font-size:12.5px;color:#475569;margin-bottom:8px;line-height:1.8}
+.agr-p b{color:var(--ink)}
+.agr-list{list-style:none;counter-reset:agr;margin:0 0 8px 4px}
+.agr-list li{counter-increment:agr;position:relative;padding:4px 0 4px 26px;font-size:12.5px;color:#475569;line-height:1.7}
+.agr-list li::before{content:counter(agr) ".";position:absolute;left:2px;color:var(--muted);font-weight:600}
+.agr-list li b{color:var(--ink)}
+.agr-foot{text-align:center;color:var(--muted);font-size:12px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+
+@media (max-width:860px){
+  .tiers{grid-template-columns:1fr}
+  .tier.pop{transform:none}
+  .info-grid2,.edition-row,.tenants{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .summary{position:static}
+  .price-head h1{font-size:25px}
+  .steps{overflow-x:auto;justify-content:flex-start}
+  .step-bar{width:26px}
+}
+
+/* ---------- pricing v2 ---------- */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch}
+.plan{position:relative;background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:26px 24px 24px;cursor:pointer;transition:.18s;display:flex;flex-direction:column}
+.plan:hover{border-color:var(--indigo-l);box-shadow:0 16px 42px rgba(99,102,241,.16);transform:translateY(-3px)}
+.plan.pop{border:1.5px solid var(--indigo-l);background:linear-gradient(165deg,#F3F1FE 0%,#FBFAFF 60%,#FDFCFF 100%);box-shadow:0 10px 30px rgba(99,102,241,.10)}
+.plan.pop:hover{border-color:var(--indigo);box-shadow:0 18px 46px rgba(99,102,241,.20)}
+.plan .badge{position:absolute;top:-13px;left:24px;background:linear-gradient(135deg,var(--indigo-l),var(--indigo));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px}
+.plan-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.plan .pname{font-size:18px;font-weight:800}
+.plan.pop .pname{color:var(--indigo)}
+.plan.prem .pname{color:#d97706}
+.plan .ptag{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5;min-height:18px}
+.plan .jump{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#F1F2FB;display:flex;align-items:center;justify-content:center;transition:.18s;margin-top:2px}
+.plan:hover .jump{background:var(--indigo);transform:translateX(2px)}
+.plan:hover .jump svg{stroke:#fff}
+.plan .pprice{margin:14px 0 2px;display:flex;align-items:baseline;gap:6px;min-height:44px}
+.plan .pprice .amt{font-size:38px;font-weight:800;letter-spacing:-1px}
+.plan .pprice .amt.custom{color:#d97706;font-size:34px}
+.plan .pprice .per{font-size:13px;color:var(--muted);font-weight:500}
+.plan .psub{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px;min-height:20px}
+.plan .psub b{color:#334155}
+.plan .cta{width:100%;margin-bottom:16px}
+.plan .feat{list-style:none;display:flex;flex-direction:column;gap:10px}
+.plan .feat li{display:flex;gap:9px;font-size:12.5px;line-height:1.55;color:#475569}
+.plan .feat li svg{flex-shrink:0;margin-top:2px}
+.plan .feat li b{color:var(--ink);font-weight:600}
+.plan .feat li.no{color:#94A3B8}
+.more{display:none;flex-direction:column;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.more.open{display:flex}
+.more-btn{margin-top:12px;align-self:flex-start;background:transparent;border:none;color:var(--indigo);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 0}
+.more-btn:hover{text-decoration:underline}
+.spacer{flex:1}
+
+/* tooltip */
+.tip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#E2E4F2;color:#6B7194;font-size:10px;font-weight:700;cursor:help;margin-left:4px;vertical-align:middle}
+.tip:hover .bubble{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.bubble{position:absolute;bottom:150%;left:50%;transform:translateX(-50%) translateY(5px);width:230px;background:#0F172A;color:#fff;font-size:11px;font-weight:400;line-height:1.65;padding:10px 12px;border-radius:9px;opacity:0;visibility:hidden;transition:.16s;z-index:30;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#0F172A}
+
+/* units display panel */
+.units-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-top:20px;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+.units-price{text-align:center;padding:18px 26px;margin-right:4px;min-width:174px;background:linear-gradient(170deg,#F6F4FF,#FBFAFF);border-radius:12px}
+.units-price .lbl{font-size:12px;color:var(--indigo);font-weight:700;margin-bottom:6px;letter-spacing:.2px}
+.units-price .amt{font-size:34px;font-weight:800;letter-spacing:-1px;background:linear-gradient(95deg,#2563EB 0%,#6366F1 50%,#9333EA 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.units-price .per{font-size:12px;color:var(--muted);margin-top:2px}
+.units-price .tag2{display:inline-block;margin-top:10px;font-size:11px;font-weight:600;color:#4338CA;background:#fff;border:1px solid #DDE0F5;border-radius:999px;padding:3px 11px}
+.units-info h3{font-size:14px;font-weight:700;margin-bottom:3px;color:#4338CA}
+.units-info .sub{font-size:11.5px;color:var(--muted);margin-bottom:10px}
+.units-info ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.units-info li{font-size:12px;color:#475569;line-height:1.5;display:flex;gap:7px}
+.units-info li svg{flex-shrink:0;margin-top:3px}
+.units-info li b{color:#334155;font-weight:600}
+@media (max-width:860px){
+  .plans{grid-template-columns:1fr}
+  .units-panel{grid-template-columns:1fr;gap:18px}
+  .units-price{padding:16px;min-width:0}
+  .units-info ul{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+
+
+<!-- ============================================================
+     SCENE 0 · PRICING (entry / landing)
+     ============================================================ -->
+<div class="scene active" id="scenePricing">
+
+  <div class="price-head">
+    <h1 class="grad-text">Choose your plan</h1>
+  </div>
+
+  <div class="plans">
+
+    <!-- Professional -->
+    <div class="plan pop" onclick="startBuy('pro')">
+      <div class="badge">Most popular</div>
+      <div class="plan-top">
+        <div>
+          <div class="pname">Professional</div>
+          <div class="ptag">Enterprise AI Operating System</div>
+        </div>
+        <span class="jump"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="pprice"><span class="amt">$15</span><span class="per">/ seat / month</span></div>
+      <div class="psub">Min. <b>5 seats</b> · <b>500 units</b>/seat/mo gifted
+        <span class="tip">i<span class="bubble">Gifted units apply to the production tenant only, are dispatched monthly, valid that month and don't carry over.</span></span>
+      </div>
+      <button class="btn btn-primary cta" onclick="event.stopPropagation();startBuy('pro')">Buy now</button>
+      <ul class="feat">
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>Chat / Work / Build</b> — analyze, run tasks, build apps &amp; agents</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>Business-aware</b> —  connect ERP, data, workflows & permissions</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>Secure & reliable</b> — enterprise security, isolation & action approval</span></li>
+      </ul>
+      <div class="more" id="morePro">
+        <ul class="feat" style="gap:10px">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>1 production + 1 sandbox</b> tenant, isolated, public cloud</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Build &amp; test in sandbox, then promote to production</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>AI-native Finance</b> &amp; <b>CEO Office</b> — @mention agents in any workspace</span></li>
+          <li class="no"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg><span>No governance / value-analysis console for Finance Dept &amp; CEO Office</span></li>
+        </ul>
+      </div>
+      <div class="spacer"></div>
+      <button class="more-btn" id="btnMorePro" onclick="event.stopPropagation();toggleMore('Pro')">View all features ▾</button>
+    </div>
+
+    <!-- Premium -->
+    <div class="plan prem" onclick="openContact()">
+      <div class="plan-top">
+        <div>
+          <div class="pname">Premium</div>
+          <div class="ptag">For large organizations</div>
+        </div>
+        <span class="jump"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="pprice"><span class="amt custom">Custom</span></div>
+      <div class="psub">Min. <b>100 seats</b> · <b>500 units</b>/seat/mo gifted
+        <span class="tip">i<span class="bubble">Gifted units apply to the production tenant only, dispatched monthly, valid that month and don't carry over. Premium is custom-priced — contact sales for a quote.</span></span>
+      </div>
+      <button class="btn btn-dark cta" onclick="event.stopPropagation();openContact()">Contact sales</button>
+      <ul class="feat">
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Everything in <b>Professional</b></span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>AI Finance Department</b> — full module with value analysis &amp; governance</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span><b>CEO Office</b> — full module with agent value analysis &amp; run governance</span></li>
+      </ul>
+      <div class="spacer"></div>
+    </div>
+  </div>
+
+  <!-- ===== Lingee Units (display only) ===== -->
+  <div class="units-panel">
+    <div class="units-price">
+      <div class="lbl">Lingee Units</div>
+      <div class="amt">$300</div>
+      <div class="per">per 10,000 units</div>
+      <div class="tag2">$0.03 / unit</div>
+    </div>
+    <div class="units-info">
+      <h3>Optional usage packs <span style="font-weight:500;color:var(--muted);font-size:12px">— added at checkout</span></h3>
+      <div class="sub">For heavy AI usage and sandbox work, on top of any active subscription. Min 10,000 units.</div>
+      <ul>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Use freely across <b>production &amp; sandbox</b></span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Assignable <b>per user</b> (shared pool within each cap)</span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Allocated <b>immediately</b> after payment</span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Valid for the term, <b>no carry-over</b></span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCENE 1 · BUY FLOW
+     ============================================================ -->
+<div class="scene" id="sceneBuy">
+
+  <div class="steps">
+    <div class="step active" id="st-1"><span class="dot">1</span><span>Configure</span></div>
+    <div class="step-bar"></div>
+    <div class="step" id="st-2"><span class="dot">2</span><span>Company &amp; review</span></div>
+    <div class="step-bar"></div>
+    <div class="step" id="st-3"><span class="dot">3</span><span>Pay</span></div>
+    <div class="step-bar"></div>
+    <div class="step" id="st-4"><span class="dot">4</span><span>Activate</span></div>
+  </div>
+
+  <!-- ===== STEP 1 · CONFIGURE ===== -->
+  <div class="panel active" id="p-1">
+    <div class="layout">
+      <div>
+        <div class="card">
+          <div class="sec-title">Choose your plan</div>
+          <div class="sec-sub">Professional is self-serve. Premium (100+ seats) is sales-assisted.</div>
+
+          <div class="edition-row">
+            <div class="ed-card sel" id="ed-pro" onclick="selectEdition('pro')">
+              <div class="ed-check"></div>
+              <div class="ed-name">Professional</div>
+              <div class="ed-price" id="edProPrice">$180 / seat / year ·  Min. 5 seats</div>
+            </div>
+            <div class="ed-card" id="ed-prem" onclick="selectEdition('prem')">
+              <div class="ed-check"></div>
+              <div class="ed-name">Premium</div>
+              <div class="ed-price">Custom · Min. 100 seats</div>
+            </div>
+          </div>
+
+          <!-- premium notice -->
+          <div id="premNotice" class="alert alert-info" style="display:none">
+            <b>Premium is quote-based.</b> Tell us your seat count and requirements and a specialist will prepare pricing, contract and (if needed) a custom Stripe invoice. <a href="javascript:void(0)" onclick="openContact()" style="color:#3730A3;font-weight:700">Contact sales →</a>
+          </div>
+
+          <!-- pro config -->
+          <div id="proConfig">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px">Billing cycle</div>
+                <div class="seg">
+                  <button id="cyc-monthly" onclick="setCycle('monthly')">Monthly</button>
+                  <button id="cyc-yearly" class="on" onclick="setCycle('yearly')">Annual</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px">Term</div>
+                <select id="cfgTerm" style="height:40px;border:1px solid #D5D8E3;border-radius:10px;padding:0 12px;font-size:13.5px;min-width:160px" onchange="recompute()"></select>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="field">
+                <label>Seats <span class="req">*</span></label>
+                <div class="stepper">
+                  <button type="button" onclick="bumpSeats(-1)">−</button>
+                  <input id="cfgSeats" type="number" min="5" step="1" value="10" onchange="recompute()" oninput="recompute()">
+                  <button type="button" onclick="bumpSeats(1)">+</button>
+                </div>
+                <div class="hint">Minimum 5 seats</div>
+              </div>
+              <div class="field">
+                <label>Gifted Lingee units</label>
+                <input id="cfgGift" disabled>
+                <div class="hint">500 / seat / month · production only · non-carryover</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- add-on units -->
+        <div class="card" id="addonCard">
+          <div class="sec-title">Add Lingee Units <span style="font-weight:500;color:var(--muted);font-size:12px">(optional)</span></div>
+          <div class="sec-sub">For heavy AI usage and sandbox work. $300 per 10,000 units ($0.03/unit).</div>
+
+          <div class="frow">
+            <div class="field">
+              <label>Additional units</label>
+              <div class="stepper">
+                <button type="button" onclick="bumpUnits(-10000)">−</button>
+                <input id="cfgUnits" type="number" min="0" step="10000" value="0" onchange="recompute()" oninput="recompute()">
+                <button type="button" onclick="bumpUnits(10000)">+</button>
+              </div>
+              <div class="hint">Multiples of 10,000 · leave 0 to skip</div>
+            </div>
+            <div class="field">
+              <label>Units cost (pre-tax)</label>
+              <input id="cfgUnitsCost" disabled value="$0">
+              <div class="hint">Usable in production &amp; sandbox · assignable per user</div>
+            </div>
+          </div>
+          <div class="alert alert-info" style="margin-bottom:0;margin-top:4px">
+            <b>Add Lingee unit rules:</b> requires an active subscription · purchased units are allocated immediately and valid for the subscription term.
+          </div>
+        </div>
+      </div>
+
+      <!-- sticky summary -->
+      <div class="summary">
+        <h3>Order summary</h3>
+        <div class="sline"><span>Plan</span><span class="v" id="sumPlan">Professional</span></div>
+        <div class="sline"><span>Billing</span><span class="v" id="sumCycle">Annual · 1 year</span></div>
+        <div class="sline"><span>Seats</span><span class="v" id="sumSeats">10</span></div>
+        <div class="sline"><span>Gifted units</span><span class="v" id="sumGift">5,000 / mo</span></div>
+        <div class="sdiv"></div>
+        <div class="sline"><span>Subscription</span><span class="v" id="sumSub">$1,800.00</span></div>
+        <div class="sline"><span>Add-on units</span><span class="v" id="sumAddon">—</span></div>
+        <div class="sdiv"></div>
+        <div class="stotal"><span>Total (pre-tax)<br><span style="font-size:11px;color:#94A3B8">USD</span></span><span class="big" id="sumTotal">$1,800.00</span></div>
+        <div class="tax-note">Applicable tax is calculated at the Stripe payment step from your billing address — Malaysia is charged SST (8%); other countries are zero-rated.</div>
+        <button class="btn btn-primary" style="width:100%;margin-top:16px" id="continueBtn" onclick="goStep(2)">Continue</button>
+        <div class="h-center" style="margin-top:10px"><a href="javascript:void(0)" class="muted" style="font-size:12px;text-decoration:none" onclick="showScene('scenePricing')">← Back to pricing</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2 · COMPANY & REVIEW ===== -->
+  <div class="panel" id="p-2">
+    <div class="layout">
+      <div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:18px">Your details</div>
+
+          <div class="frow">
+            <div class="field full">
+              <label>Contact name <span class="req">*</span></label>
+              <input id="coContact" placeholder="Authorized representative" value="" autocomplete="name" oninput="validateStep2()">
+              <div class="hint">The person agreeing to the terms on behalf of the company.</div>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="field">
+              <label>Work email <span class="req">*</span></label>
+              <input id="coEmail" type="email" placeholder="admin@company.com" value="admin@techcorp.com.my" autocomplete="email" oninput="validateStep2()">
+              <div class="hint">Activation link, invoice and contract are sent here.</div>
+            </div>
+            <div class="field">
+              <label>Email verification code <span class="req">*</span></label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="coCode" placeholder="6-digit code" maxlength="6" value="" oninput="validateStep2()" style="flex:1">
+                <button class="btn btn-outline" id="codeBtn" onclick="sendCode()" style="height:40px;padding:0 14px;font-size:12px;white-space:nowrap">Send code</button>
+              </div>
+              <div class="ok" id="codeOk" style="display:none">✓ Code sent — demo code is 888888</div>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="field">
+              <label>Legal company name <span class="req">*</span></label>
+              <input id="coName" placeholder="e.g. TechCorp Sdn. Bhd." value="TechCorp Sdn. Bhd." autocomplete="organization" oninput="validateStep2()">
+            </div>
+            <div class="field">
+              <label>Country / region <span class="req">*</span></label>
+              <select id="coCountry" onchange="onCountryChange()">
+                <option value="MY" selected>🇲🇾 Malaysia</option>
+                <option value="SG">🇸🇬 Singapore</option>
+                <option value="ID">🇮🇩 Indonesia</option>
+                <option value="OTHER">🌍 Other / International</option>
+              </select>
+              <div class="hint" id="taxHint">Malaysian companies: applicable taxes (SST) apply.</div>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="field">
+              <label>Business registration no. <span class="req" id="regReq">*</span><span class="opt" id="regOpt" style="color:var(--muted);font-weight:400;display:none">(optional)</span></label>
+              <input id="coReg" placeholder="SSM / UEN / NIB / BRN" value="202301099887" oninput="validateStep2()">
+              <div class="hint" id="regHint">Required for Malaysian companies' tax invoice.</div>
+            </div>
+            <div class="field">
+              <label>Tax ID <span class="req" id="taxReq">*</span><span class="opt" id="taxOpt" style="color:var(--muted);font-weight:400;display:none">(optional)</span></label>
+              <input id="coTax" placeholder="SST / GST / VAT number" oninput="validateStep2()">
+              <div class="hint">For correct tax treatment / zero-rating.</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted2);line-height:1.6;padding:0 4px">
+          Sold &amp; invoiced by <b style="color:#475569;font-weight:600">KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD.</b>, governed by the laws of Malaysia. Tenants run on public cloud; data residency region is shown at activation. Not available in countries or to parties restricted under applicable sanctions and export-control laws.
+        </div>
+      </div>
+
+      <!-- summary + agreement -->
+      <div class="summary">
+        <h3>Review order</h3>
+        <div class="sline"><span>Plan</span><span class="v" id="r2Plan">Professional</span></div>
+        <div class="sline"><span>Billing</span><span class="v" id="r2Cycle">Annual · 1 year</span></div>
+        <div class="sline"><span>Seats</span><span class="v" id="r2Seats">10</span></div>
+        <div class="sline"><span>Gifted units</span><span class="v" id="r2Gift">5,000 / mo</span></div>
+        <div class="sline"><span>Add-on units</span><span class="v" id="r2Addon">—</span></div>
+        <div class="sdiv"></div>
+        <div class="stotal"><span>Total (pre-tax)<br><span style="font-size:11px;color:#94A3B8">+ taxes at checkout</span></span><span class="big" id="r2Total">$1,800.00</span></div>
+
+        <div class="agree" style="margin-top:16px">
+          <input type="checkbox" id="agreeChk" onchange="validateStep2()">
+          <span>I agree to the <a href="javascript:void(0)" onclick="openModal('mAgreement')">Service Subscription Agreement</a> and <a href="javascript:void(0)" onclick="openModal('mNotice')">Purchase Notice</a>, and confirm I'm authorized to purchase on behalf of the company.</span>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:16px" id="toPayBtn" onclick="goStep(3)" disabled>Continue to payment</button>
+        <div class="h-center" style="margin-top:10px"><a href="javascript:void(0)" class="muted" style="font-size:12px;text-decoration:none" onclick="goStep(1)">← Back</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3 · PAY (STRIPE EMBEDDED CHECKOUT) ===== -->
+  <div class="panel" id="p-3">
+    <div class="layout">
+      <div>
+        <div class="stripe-box">
+          <div class="stripe-top">
+            <div>
+              <div style="font-size:12px;opacity:.85">Pay KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD.</div>
+              <div class="stripe-amt" id="payAmount">$1,800.00</div>
+              <div style="font-size:11px;opacity:.8;margin-top:2px">pre-tax · final total incl. tax shown below</div>
+            </div>
+            <div class="lock">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+          </div>
+          <div class="stripe-body">
+            <div class="embed-render">
+              <div class="embed-render-tag">Stripe checkout</div>
+
+              <div class="field full" style="margin-bottom:12px">
+                <label>Email</label>
+                <input value="admin@techcorp.com.my" readonly>
+              </div>
+
+              <label style="display:block;font-size:12.5px;font-weight:600;color:#4A4F5E;margin-bottom:7px">Payment method</label>
+              <div class="srow">
+                <span class="schip sel">💳 Card</span>
+                <span class="schip">FPX</span>
+                <span class="schip">GrabPay</span>
+                <span class="schip"> Pay</span>
+                <span class="schip">G Pay</span>
+                <span class="schip">Link</span>
+              </div>
+
+              <div class="field full" style="margin-bottom:12px;margin-top:14px">
+                <label>Card information</label>
+                <div class="card-input">
+                  <input value="4242 4242 4242 4242" readonly>
+                  <div class="brands"><span style="background:#1A1F71">VISA</span><span style="background:#EB001B">MC</span></div>
+                </div>
+              </div>
+              <div class="frow">
+                <div class="field"><label>Expiry</label><input value="12 / 28" readonly></div>
+                <div class="field"><label>CVC</label><input value="123" readonly></div>
+              </div>
+              <div class="frow">
+                <div class="field"><label>Cardholder name</label><input value="TechCorp Sdn Bhd" readonly></div>
+                <div class="field"><label>Country</label><input value="Malaysia" readonly></div>
+              </div>
+              <div class="frow">
+                <div class="field full"><label>Billing address</label><input value="Level 12, Menara KL, 50450 Kuala Lumpur" readonly></div>
+              </div>
+              <div class="frow">
+                <div class="field full"><label>Tax ID <span style="color:var(--muted2);font-weight:400">(optional)</span></label><input placeholder="Tax ID" readonly></div>
+              </div>
+
+              <button class="btn btn-primary" style="width:100%;margin-top:6px;height:46px" id="payBtn" onclick="doPay()">
+                Pay <span id="payBtnAmt">$1,917.00</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- summary -->
+      <div class="summary">
+        <h3>You're paying for</h3>
+        <div class="sline"><span>Plan</span><span class="v" id="r3Plan">Professional</span></div>
+        <div class="sline"><span>Billing</span><span class="v" id="r3Cycle">Annual · 1 year</span></div>
+        <div class="sline"><span>Seats</span><span class="v" id="r3Seats">10</span></div>
+        <div class="sline"><span>Add-on units</span><span class="v" id="r3Addon">—</span></div>
+        <div class="sdiv"></div>
+        <div class="sline"><span>Subtotal (pre-tax)</span><span class="v" id="r3Sub">$1,800.00</span></div>
+        <div class="sline"><span id="r3TaxLabel">Tax</span><span class="v" style="font-weight:500;color:var(--muted)">Calculated at checkout</span></div>
+        <div class="tax-note">Tax is matched by Stripe to your billing address (Malaysia → SST 8%, elsewhere → zero-rated). The <b>final total including tax is shown in the Stripe checkout</b> and on your receipt/invoice.</div>
+        <div class="h-center" style="margin-top:14px"><a href="javascript:void(0)" class="muted" style="font-size:12px;text-decoration:none" onclick="goStep(2)">← Back</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 4 · ACTIVATE ===== -->
+  <div class="panel" id="p-4" style="max-width:560px;margin:0 auto">
+    <div class="card" id="provPending">
+      <div class="hero">
+        <div class="ic indigo" id="provIcon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" id="provSpinner" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+          <span id="provDone" style="display:none">✓</span>
+        </div>
+        <h2 id="provTitle">Setting up your Lingee…</h2>
+        <p id="provDesc">Payment confirmed. We're preparing your production &amp; sandbox tenants — usually under a minute.</p>
+      </div>
+    </div>
+
+    <!-- result, hidden until done -->
+    <div id="provResult" style="display:none">
+      <div class="card">
+        <div class="hero"><div class="ic green">✓</div>
+          <h2>Lingee is ready</h2>
+          <p>Your production and sandbox tenants are live. The admin login link has been sent to <b id="doneEmail">admin@techcorp.com.my</b>.</p>
+        </div>
+        <div class="kv">
+          <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+          <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+          <div class="row"><span class="l">Items</span><span class="r hl" id="doneItems">Professional · 10 seats × 1 year</span></div>
+          <div class="row" id="doneAddonRow"><span class="l">Add-on units</span><span class="r" id="doneAddonUnits">50,000 units (production + sandbox, valid for the term)</span></div>
+          <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+          <div class="row"><span class="l">Service term</span><span class="r">2026-06-05 → 2027-06-05 (GMT+8)</span></div>
+          <div class="row"><span class="l">Paid</span><span class="r">$3,564.00 USD (incl. tax)</span></div>
+        </div>
+      </div>
+      <div class="alert alert-info">A payment receipt has been emailed. Your tax invoice will be issued once your billing details are confirmed — complete them anytime in the admin console.</div>
+      <div class="btn-row" style="justify-content:center;gap:12px">
+        <a class="btn btn-primary" href="javascript:void(0)">Open production</a>
+        <a class="btn btn-ghost" href="javascript:void(0)">Open sandbox</a>
+      </div>
+    </div>
+  </div>
+</div><!-- end sceneBuy -->
+
+<!-- ============================================================
+     SECONDARY SCENES (order status pages)
+     ⚠️ DEMO DATA: the order no. / date / admin email / company / items / amounts
+     shown in every scene below are ONE sample order (see DEMO_CFG.demoOrder).
+     In production these are rendered by the backend from the CURRENT order —
+     they are NOT constants. Do not hard-code these strings.
+     ============================================================ -->
+
+<!-- pending payment (saved order, 14-day validity) -->
+<div class="scene narrow" id="scenePending">
+  <div class="card">
+    <div class="hero"><div class="ic" style="background:var(--amber)">🕒</div>
+      <h2>Order saved — payment pending</h2>
+      <p>Your order is reserved for <b>14 days</b>. Complete payment anytime before it expires, or it will be cancelled automatically.</p>
+    </div>
+    <div class="kv">
+      <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+      <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+      <div class="row"><span class="l">Items</span><span class="r hl">Professional · 10 seats × 1 year</span></div>
+      <div class="row"><span class="l">Add-on units</span><span class="r">50,000 Lingee units</span></div>
+      <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+      <div class="row"><span class="l">Subtotal (pre-tax)</span><span class="r">$3,300.00 USD</span></div>
+      <div class="row"><span class="l">Reserved until</span><span class="r">2026-06-19 14:30 (GMT+8) · 14 days left</span></div>
+    </div>
+  </div>
+  <div class="alert alert-info">We've emailed you a link to resume this order. You can also reach it anytime from your account.</div>
+  <div class="btn-row" style="justify-content:center;gap:12px">
+    <button class="btn btn-primary" onclick="showScene('sceneBuy');goStep(3)">Continue to payment</button>
+    <button class="btn btn-outline" onclick="showScene('scenePricing')">Later</button>
+    <button class="btn btn-outline" style="color:var(--red);border-color:#F3C4C4" onclick="if(confirm('Cancel this order? This cannot be undone — you would need to start a new order.')){showScene('sceneCancelled');}">Cancel order</button>
+  </div>
+</div>
+
+<!-- cancelled (customer-initiated) -->
+<div class="scene narrow" id="sceneCancelled">
+  <div class="card">
+    <div class="hero"><div class="ic" style="background:#94A3B8">✕</div>
+      <h2>Order cancelled</h2>
+      <p>This order has been cancelled. No payment was taken. You can start a new order anytime.</p>
+    </div>
+    <div class="kv">
+      <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+      <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+      <div class="row"><span class="l">Items</span><span class="r hl">Professional · 10 seats × 1 year</span></div>
+      <div class="row"><span class="l">Add-on units</span><span class="r">50,000 Lingee units</span></div>
+      <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+      <div class="row"><span class="l">Subtotal (pre-tax)</span><span class="r">$3,300.00 USD</span></div>
+      <div class="row"><span class="l">Cancelled</span><span class="r">2026-06-05 15:02 (GMT+8)</span></div>
+    </div>
+  </div>
+  <div class="btn-row" style="justify-content:center">
+    <button class="btn btn-primary" onclick="showScene('scenePricing')">Start a new order</button>
+  </div>
+</div>
+
+<!-- under review (post-payment confirmation — neutral wording) -->
+<div class="scene narrow" id="sceneReview">
+  <div class="card">
+    <div class="hero"><div class="ic indigo">�</div>
+      <h2>Confirming your order…</h2>
+      <p>Payment received. We're confirming a few details before activating — usually just a few minutes. We'll email you as soon as it's ready.</p>
+    </div>
+    <div class="kv">
+      <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+      <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+      <div class="row"><span class="l">Items</span><span class="r hl">Professional · 10 seats × 1 year</span></div>
+      <div class="row"><span class="l">Add-on units</span><span class="r">50,000 Lingee units</span></div>
+      <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+      <div class="row"><span class="l">Subtotal (pre-tax)</span><span class="r">$3,300.00 USD</span></div>
+      <div class="row"><span class="l">Status</span><span class="r" style="color:var(--amber)">● Confirming</span></div>
+      <div class="row"><span class="l">Paid</span><span class="r">$3,564.00 USD (incl. tax)</span></div>
+    </div>
+  </div>
+  <div class="alert alert-info">No action needed — we'll notify <b>admin@techcorp.com.my</b> when it's done. Most orders are confirmed automatically.</div>
+</div>
+
+<!-- rejected (compliance — cannot sell, refund) -->
+<div class="scene narrow" id="sceneRejected">
+  <div class="card">
+    <div class="hero"><div class="ic" style="background:var(--red)">✕</div>
+      <h2>We're unable to complete this order</h2>
+      <p>Unfortunately we're unable to provide Lingee for this order. Any amount paid will be refunded in full to your original payment method.</p>
+    </div>
+    <div class="kv">
+      <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+      <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+      <div class="row"><span class="l">Items</span><span class="r hl">Professional · 10 seats × 1 year</span></div>
+      <div class="row"><span class="l">Add-on units</span><span class="r">50,000 Lingee units</span></div>
+      <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+      <div class="row"><span class="l">Subtotal (pre-tax)</span><span class="r">$3,300.00 USD</span></div>
+      <div class="row"><span class="l">Status</span><span class="r" style="color:var(--red)">● Cannot be fulfilled</span></div>
+      <div class="row"><span class="l">Refund</span><span class="r">Full refund in progress (incl. tax)</span></div>
+    </div>
+  </div>
+  <div class="alert alert-info">Questions? Contact <b>lingeebc@kingdee.com</b> with your order number.</div>
+  <div class="btn-row" style="justify-content:center">
+    <button class="btn btn-primary" onclick="openModal('mContact')">Contact support</button>
+  </div>
+</div>
+
+<!-- activation failed (paid, refund/retry) -->
+<div class="scene narrow" id="sceneActFail">
+  <div class="card">
+    <div class="hero"><div class="ic" style="background:var(--red)">!</div>
+      <h2>We hit a problem activating your account</h2>
+      <p>Your payment went through, but we couldn't finish setting up your environment. Our team has been alerted and will resolve it or issue a full refund.</p>
+    </div>
+    <div class="kv">
+      <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+      <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+      <div class="row"><span class="l">Items</span><span class="r hl">Professional · 10 seats × 1 year</span></div>
+      <div class="row"><span class="l">Add-on units</span><span class="r">50,000 Lingee units</span></div>
+      <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+      <div class="row"><span class="l">Subtotal (pre-tax)</span><span class="r">$3,300.00 USD</span></div>
+      <div class="row"><span class="l">Status</span><span class="r" style="color:var(--red)">● Activation failed</span></div>
+      <div class="row"><span class="l">Paid</span><span class="r">$3,564.00 USD (incl. tax)</span></div>
+    </div>
+  </div>
+  <div class="alert alert-warn"><b>You won't be charged for a service you didn't receive.</b> We'll either complete activation shortly or refund to your original payment method. Contact <b>lingeebc@kingdee.com</b> with your order number anytime.</div>
+  <div class="btn-row" style="justify-content:center;gap:12px">
+    <button class="btn btn-primary" onclick="openModal('mContact')">Contact support</button>
+  </div>
+</div>
+
+<!-- payment failed -->
+<div class="scene narrow" id="sceneFail">
+  <div class="card">
+    <div class="hero"><div class="ic" style="background:var(--red)">✕</div>
+      <h2>Payment failed</h2>
+      <p>Your card was declined. No charge was made. Try another card or payment method.</p>
+    </div>
+    <div class="kv">
+      <div class="row"><span class="l">Order no.</span><span class="r">LG-OS-20260605-0007</span></div>
+      <div class="row"><span class="l">Order date</span><span class="r">2026-06-05 14:30 (GMT+8)</span></div>
+      <div class="row"><span class="l">Items</span><span class="r hl">Professional · 10 seats × 1 year</span></div>
+      <div class="row"><span class="l">Add-on units</span><span class="r">50,000 Lingee units</span></div>
+      <div class="row"><span class="l">Gifted units</span><span class="r">500 / seat / month (production, monthly)</span></div>
+      <div class="row"><span class="l">Subtotal (pre-tax)</span><span class="r">$3,300.00 USD</span></div>
+      <div class="row"><span class="l">Reason</span><span class="r" style="color:var(--red)">Card declined (insufficient_funds)</span></div>
+    </div>
+  </div>
+  <div class="alert alert-warn"><b>Tip:</b> contact your bank, or try another card / regional wallet (FPX, GrabPay). The order stays open for 14 days.</div>
+  <div class="btn-row" style="justify-content:center;gap:12px">
+    <button class="btn btn-primary" onclick="showScene('sceneBuy');goStep(3)">Retry payment</button>
+    <button class="btn btn-outline" onclick="showScene('scenePricing')">Back to pricing</button>
+  </div>
+</div>
+
+<!-- contact sales -->
+<div class="scene narrow" id="sceneContact" style="max-width:620px">
+  <div class="card">
+    <div class="sec-title">Contact Sales</div>
+    <div class="sec-sub">Leave your information and our sales team will contact you shortly.</div>
+
+    <div class="frow">
+      <div class="field full">
+        <label>Full Name <span class="req">*</span></label>
+        <input placeholder="Your full name">
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="field full">
+        <label>Business Email <span class="req">*</span></label>
+        <input type="email" placeholder="name@company.com">
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="field full">
+        <label>Phone Number <span class="req">*</span></label>
+        <div style="display:flex;gap:8px">
+          <select style="width:96px;flex:none">
+            <option>+1</option><option selected>+60</option><option>+65</option><option>+62</option><option>+86</option><option>+44</option>
+          </select>
+          <input style="flex:1" placeholder="Enter your phone number">
+        </div>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="field full">
+        <label>Company or Organization Name <span class="req">*</span></label>
+        <input placeholder="Enter your company name">
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="field full">
+        <label>Budget <span class="req">*</span> <span style="color:var(--muted);font-weight:400">(USD / year)</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="flex:none;display:inline-flex;align-items:center;height:40px;padding:0 12px;border:1px solid #D5D8E3;border-radius:10px;background:#F7F8FC;font-size:13.5px;color:#475569;font-weight:600">$</span>
+          <input style="flex:1" placeholder="e.g. 50,000">
+          <span style="flex:none;display:inline-flex;align-items:center;height:40px;padding:0 12px;border:1px solid #D5D8E3;border-radius:10px;background:#F7F8FC;font-size:13px;color:#475569">/ year</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="field full">
+        <label>Expected Seats <span class="req">*</span></label>
+        <input type="number" min="100" placeholder="e.g. 100">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="alert('Thanks! A Lingee specialist will contact you shortly. (Demo)')">Submit</button>
+    <div class="h-center" style="margin-top:12px"><a href="javascript:void(0)" class="muted" style="font-size:12px;text-decoration:none" onclick="showScene('scenePricing')">← Back to pricing</a></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+<div class="modal" id="mAgreement">
+  <div class="modal-box">
+    <div class="modal-hd"><b>Lingee Service Subscription Agreement</b><span class="x" onclick="closeModal('mAgreement')">&times;</span></div>
+    <div class="modal-bd">
+      <div class="agr-title">Lingee Service Subscription Agreement &amp; Purchase Notice</div>
+      <div class="agr-meta">Effective: May 20, 2026 &nbsp;&nbsp; Updated: May 28, 2026</div>
+      <div class="agr-meta prod">Product: Lingee</div>
+      <hr class="agr-rule">
+
+      <div class="agr-callout">By checking this agreement at the time of purchase, you acknowledge that you have read, understood, and agreed to all terms herein.</div>
+
+      <p class="agr-intro">Welcome to Lingee subscription services. Please read and fully understand this agreement before purchasing, activating, or using this product, <b>especially clauses highlighted in bold relating to your rights — including disclaimers, liability limitations, fee and refund rules, and electronic agreement validity.</b></p>
+
+      <div class="agr-h">1. Enterprise Entity &amp; Authorization</div>
+      <p class="agr-p">If you purchase or activate this service on behalf of an enterprise, you confirm that you have obtained lawful and sufficient authorization from that entity.</p>
+
+      <div class="agr-h">2. Product &amp; Pricing</div>
+      <ol class="agr-list">
+        <li>Lingee Professional Edition is priced at <b>USD $15 / seat / month</b>, or <b>USD $180 / seat / year</b> for annual billing.</li>
+        <li>Monthly and annual billing are supported, for a term of up to 3 years.</li>
+        <li>A minimum of 5 seats is required.</li>
+        <li>Lingee Units are priced at a flat <b>USD $0.03 / unit (USD $300 per 10,000 units)</b>; an active subscription is required before purchasing units.</li>
+        <li>Premium Edition (from 100 seats) is custom-priced — contact sales. All prices are in USD and exclusive of applicable taxes.</li>
+      </ol>
+
+      <div class="agr-h">3. Enterprise Identity Verification</div>
+      <ol class="agr-list">
+        <li>Only an enterprise administrator may initiate a subscription purchase.</li>
+        <li>Light verification at purchase: email verification + company name.</li>
+        <li>Full verification (e.g. business registration / tax details) may be required for invoices and formal contracts.</li>
+      </ol>
+
+      <div class="agr-h">4. Service Activation &amp; Usage</div>
+      <p class="agr-p">You may purchase through the Lingee product or designated channels. Each subscription provisions <b>one production tenant and one sandbox tenant, fully isolated</b>, on public cloud; Lingee may connect to your privately deployed ERP systems. You are responsible for all activities under your account.</p>
+
+      <div class="agr-h">5. Payment &amp; Confirmation</div>
+      <ol class="agr-list">
+        <li>Payment is completed online via <b>Stripe</b>.</li>
+        <li>Orders are valid for <b>14 calendar days</b>; unpaid orders are automatically closed.</li>
+        <li>Upon payment confirmation, the system automatically activates the service.</li>
+      </ol>
+
+      <div class="agr-h">6. Lingee Units Rules</div>
+      <ol class="agr-list">
+        <li>Each seat receives <b>500 complimentary units per month</b>, dispatched monthly, valid for the current month only, for the <b>production tenant only</b>.</li>
+        <li>Additional unit packs: minimum 10,000 units, allocated immediately, valid within the subscription term, usable across <b>both production and sandbox</b>, and assignable per user within each user's cap.</li>
+        <li>Units <b>cannot be carried over, refunded, cashed out, or transferred.</b></li>
+      </ol>
+
+      <div class="agr-h">7. Electronic Contract &amp; E-Signature</div>
+      <p class="agr-p">Upon payment confirmation, an electronic contract is automatically generated. By checking this agreement, you accept all contract terms without additional signing, which constitutes a legally binding agreement.</p>
+
+      <div class="agr-h">8. Invoice</div>
+      <p class="agr-p">Submit accurate billing information as required. Errors caused by incorrect information are your responsibility. Tax invoices are issued in compliance with Malaysian e-invoicing requirements.</p>
+
+      <div class="agr-h">9. Refund Policy</div>
+      <ol class="agr-list">
+        <li><b>No refund after service activation.</b></li>
+        <li>Paid but unactivated orders may be cancelled with a refund upon request.</li>
+        <li>Unpaid orders may be cancelled at any time.</li>
+        <li><b>Lingee Units are non-refundable, non-transferable, and cannot be cashed out.</b></li>
+      </ol>
+      <p class="agr-p">Lingee is a digital software service; once payment is confirmed and the service is activated, the primary contractual obligations are deemed fulfilled, and fees paid are non-refundable unless otherwise required by law.</p>
+
+      <div class="agr-h">10. Rights Adjustment</div>
+      <p class="agr-p">We may adjust service content, pricing, and subscription plans, with reasonable prior notice for material changes.</p>
+
+      <div class="agr-h">11. Suspension &amp; Termination</div>
+      <p class="agr-p">We may suspend or terminate services if you violate the law, this agreement, or engage in abusive behavior. Fees paid are generally non-refundable.</p>
+
+      <div class="agr-h">12. Risk Disclosure &amp; Liability Limitation</div>
+      <p class="agr-p">AI technology has inherent limitations. Content generated by Lingee is for reference only and does not constitute professional advice. <b>You bear all risks associated with usage.</b></p>
+
+      <div class="agr-h">13. Data</div>
+      <p class="agr-p">Customer data belongs to the Customer and is encrypted in transit and at rest, and is not used for any purpose other than providing the service. Data residency region is shown at activation. Personal data is handled in accordance with applicable data protection laws.</p>
+
+      <div class="agr-h">14. Contact</div>
+      <p class="agr-p">Support email: lingeebc@kingdee.com</p>
+
+      <div class="agr-h">15. Miscellaneous</div>
+      <ol class="agr-list">
+        <li>This agreement is governed by the <b>laws of Malaysia</b>.</li>
+        <li>Disputes shall be submitted to the <b>Asian International Arbitration Centre (AIAC), Kuala Lumpur</b>.</li>
+        <li>Invalid clauses do not affect the validity of the remaining provisions.</li>
+      </ol>
+
+      <div class="agr-foot">KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD. · Version v2.1 · Updated May 28, 2026</div>
+    </div>
+    <div class="modal-ft center"><button class="btn btn-primary" style="height:40px;padding:0 40px" onclick="closeModal('mAgreement')">Close</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mContact">
+  <div class="modal-box" style="max-width:560px">
+    <div class="modal-hd"><b>Contact support</b><span class="x" onclick="closeModal('mContact')">&times;</span></div>
+    <div class="modal-bd">
+      <p style="margin:0 0 4px;color:var(--muted)">Something wrong with your order? Send us a message and we'll resolve it — fix the activation or issue a refund — within 1 business day.</p>
+      <div class="kv" style="max-width:none;margin:14px 0 4px">
+        <div class="row"><span class="l">Order no.</span><span class="r" id="ctOrderNo">LG-OS-20260605-0007</span></div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Topic</label>
+        <select id="csTopic">
+          <option>Activation problem</option>
+          <option>Refund request</option>
+          <option>Billing / invoice</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Message</label>
+        <textarea id="csMsg" rows="4" placeholder="Describe the issue. We already have your order number." style="width:100%;resize:vertical"></textarea>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="submitSupport()">Send message to support</button>
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px;text-align:center">Prefer email? Write to <a id="ctSupportEmail" href="#" style="color:var(--pri);text-decoration:none;font-weight:600"></a> with your order number.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="mNotice">
+  <div class="modal-box">
+    <div class="modal-hd"><b>Purchase Notice</b><span class="x" onclick="closeModal('mNotice')">&times;</span></div>
+    <div class="modal-bd">
+      <p><b>Payment.</b> B2B purchase processed by Stripe — card, bank transfer or regional wallets. Orders are valid for 14 days; bank-transfer orders stay reserved until then and activate on settlement.</p>
+      <p><b>Activation.</b> On payment confirmation we provision your production + sandbox tenants and allocate seats and units, then email the admin login link.</p>
+      <p><b>Invoice &amp; contract.</b> A tax invoice and e-contract from KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD. are emailed to the admin contact. Provide a valid tax ID for correct tax treatment / reverse charge.</p>
+      <p><b>Units.</b> Gifted 500/seat/month apply to production only and reset monthly. Purchased packs ($0.03/unit, min 10,000) work in both environments and can be assigned per user within their cap.</p>
+      <p><b>Premium.</b> 100+ seats and AI governance are sales-assisted; contact sales for a quote and custom invoice.</p>
+      <p><b>Support.</b> lingeebc@kingdee.com</p>
+    </div>
+    <div class="modal-ft"><button class="btn btn-primary" style="height:38px" onclick="closeModal('mNotice')">Got it</button></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     DEMO DOCK  ·  ⚠️ DEV/DEMO ONLY — NOT PART OF THE PRODUCT
+     When embedding this purchase flow in-product, DELETE everything
+     between the two "DEMO DOCK" markers (this <div class="dock"> block)
+     and the ".dock" CSS rule near the top. It does not affect layout
+     (position:fixed) and is safe to remove wholesale.
+     ============================================================ -->
+<div class="dock">
+  <div class="grp"><span class="lbl">Main flow</span>
+    <button class="k" onclick="showScene('scenePricing')">Pricing</button>
+    <button onclick="startBuy('pro');goStep(1)">1 · Configure</button>
+    <button onclick="startBuy('pro');goStep(2)">2 · Company</button>
+    <button onclick="startBuy('pro');goStep(3)">3 · Pay</button>
+    <button onclick="startBuy('pro');goStep(4);runProvision()">4 · Activate</button>
+  </div>
+  <div class="grp"><span class="lbl">Order states</span>
+    <button onclick="showScene('scenePending')">Pending (14d)</button>
+    <button onclick="showScene('sceneFail')">Payment failed</button>
+    <button onclick="showScene('sceneCancelled')">Cancelled</button>
+    <button onclick="showScene('sceneReview')">Confirming (review)</button>
+    <button onclick="showScene('sceneRejected')">Rejected (refund)</button>
+    <button onclick="showScene('sceneActFail')">Activation failed</button>
+    <button onclick="startBuy('pro');goStep(4);runProvision()">Activated (success)</button>
+    <button onclick="openContact()">Contact sales</button>
+  </div>
+</div>
+<!-- ============================================================ END DEMO DOCK ============================================================ -->
+
+</div><!-- end wrap -->
+
+<script>
+/* ============================================================
+   ⚠️⚠️⚠️  DEMO HARD-CODED VALUES — DO NOT SHIP AS CONSTANTS  ⚠️⚠️⚠️
+   下面 DEMO_CFG 里的每个值都是"演示占位",上线时必须替换为动态数据源。
+   交接给研发时请逐项对照 lingee-field-sources.html(动态字段清单)。
+   切勿把这些值写死进生产代码 —— 这是之前协同踩过的坑(靠走查才发现)。
+
+   值              → 真实来源(上线时从这里取)
+   priceSeatYear   → Stripe Price 对象 (price_xxx_yearly).unit_amount
+   priceSeatMonth  → Stripe Price 对象 (price_xxx_monthly).unit_amount
+   unitPrice       → Stripe Price 对象 (点数包).unit_amount
+   minSeats        → 后台产品配置(Professional 最小席位)
+   unitPackSize    → 后台产品配置(点数包步长 10,000)
+   orderValidityDays → 后台/协议配置(14 天)
+   taxRateId       → 后台配置 = Stripe Tax Rate ID(txr_...)
+   tax 金额/标签    → 不在前端算!由 Stripe 嵌入收银台计算并显示,
+                      付款后经 Webhook 回传(amount_tax)再存入订单/发票表。
+   税率匹配规则     → 用 Stripe dynamic_tax_rates:研发在 line_item 传
+                      dynamic_tax_rates:[taxRateId] + customer_update.address='auto',
+                      Stripe 按客户在收银台填的"账单地址"自动匹配:
+                      马来地址→套 SST 8%,海外地址→无匹配=零税率。
+                      ✅ 前端/Step2 不判断国家、不挂税率、无一致性校验、无退款逻辑。
+   ============================================================ */
+var DEMO_CFG = {
+  priceSeatYear: 180,          // USD/seat/year  → Stripe Price
+  priceSeatMonth: 15,          // USD/seat/month → Stripe Price
+  unitPrice: 0.03,             // USD/unit       → Stripe Price
+  minSeats: 5,                 // → 后台产品配置
+  unitPackSize: 10000,         // → 后台产品配置
+  orderValidityDays: 14,       // → 后台/协议配置
+  taxRateId: 'txr_1Tfc93AYtN4d3VHPgvmCZ3fN', // → 后台配置(Stripe Tax Rate)
+  entity: 'KINGDEE INTERNATIONAL SOFTWARE GROUP (MALAYSIA) SDN. BHD.', // → 后台配置
+  salesEmail: 'lbc@kingdee.com.sg',     // ⚠️占位 → 后台配置(销售咨询邮箱)
+  supportEmail: 'contact@kingdee.com',  // ⚠️占位 → 后台配置(通用支持邮箱)
+  registeredOffice: 'Level 22, Axiata Tower, No. 9, Jalan Stesen Sentral 5, Kuala Lumpur Sentral, 50470 Kuala Lumpur, Malaysia.', // ⚠️占位 → 后台配置(注册地址)
+  /* ⚠️ 演示订单占位 —— 状态页(scenePending/sceneDone/sceneReview/sceneRejected/sceneActFail/sceneFail/sceneCancelled)里
+     写死的订单号/日期/客户邮箱/公司名/金额都是这一笔的占位。上线时这些值由后端按"当前订单"渲染,
+     不是常量。开发请勿把这些字符串当作固定值。 */
+  demoOrder: {
+    orderNo:    'LG-OS-20260605-0007',        // → ORDER.order_no(后端按当前订单填)
+    orderDate:  '2026-06-05 14:30 (GMT+8)',   // → ORDER.created_at(UTC 存储,GMT+8 展示)
+    company:    'TechCorp Sdn. Bhd.',         // → ACCOUNT.legal_name
+    adminEmail: 'admin@techcorp.com.my',      // → 下单联系人邮箱(客户自己填的,非本司邮箱)
+    items:      'Professional · 10 seats × 1 year', // → 由 ORDER_ITEM 拼出
+    addonUnits: '50,000 Lingee units',        // → ORDER_ITEM(点数包)
+    subtotal:   '$3,300.00 USD',              // → ORDER.amount_subtotal(税前)
+    paidTotal:  '$3,564.00 USD'               // → ORDER.amount_total(含税,Stripe 回传)
+  },
+  // 税率仅用于"下单前预估展示";最终税额以 Stripe 收银台计算为准
+  taxByCountry: {
+    MY:{ label:'SST (8%)', rate:0.08 },                 // 马来:套用 SST 税率
+    SG:{ label:'Tax (export, zero-rated)', rate:0 },    // 海外出口:零税率
+    ID:{ label:'Tax (export, zero-rated)', rate:0 },
+    OTHER:{ label:'Tax (export, zero-rated)', rate:0 }
+  }
+};
+
+/* ==================== STATE ==================== */
+var S = {
+  edition:'pro',     // pro | prem
+  cycle:'yearly',    // monthly | yearly
+  term:1,            // years (yearly) or months (monthly)
+  seats:10,
+  units:0,           // add-on units
+  country:'MY'
+};
+// 下列别名指向 DEMO_CFG —— 生产环境应从上述真实来源注入,不要保留为常量
+var PRICE_SEAT_YEAR  = DEMO_CFG.priceSeatYear;
+var PRICE_SEAT_MONTH = DEMO_CFG.priceSeatMonth;
+var UNIT_PRICE       = DEMO_CFG.unitPrice;
+var TAX              = DEMO_CFG.taxByCountry;
+
+var lastSubtotal = 0, lastTax = 0, lastTotal = 0;
+
+/* ==================== HELPERS ==================== */
+function $(id){return document.getElementById(id);}
+function usd(n){return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function intc(n){return Number(n).toLocaleString('en-US');}
+
+function showScene(id){
+  document.querySelectorAll('.scene').forEach(function(s){s.classList.remove('active');});
+  var el=$(id); if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openModal(id){
+  if(id==='mContact'){
+    var sup = DEMO_CFG.supportEmail;
+    $('ctSupportEmail').textContent = sup;  $('ctSupportEmail').href = 'mailto:'+sup;
+  }
+  $(id).classList.add('open');
+}
+function closeModal(id){$(id).classList.remove('open');}
+function openContact(){showScene('sceneContact');}
+// submit a post-sale support request → creates a SUPPORT_REQUEST in the admin backend (demo)
+function submitSupport(){
+  var msg = ($('csMsg').value||'').trim();
+  if(!msg){ alert('Please describe the issue.'); return; }
+  // ⚠️ DEMO: real impl POSTs { orderNo, topic, message, contactEmail } → backend SUPPORT_REQUEST
+  closeModal('mContact');
+  alert('Message sent to support. We\'ll reply within 1 business day. (Demo)');
+  $('csMsg').value='';
+}
+
+/* expand/collapse plan feature lists */
+function toggleMore(which){
+  var box=$('more'+which), btn=$('btnMore'+which);
+  var open=box.classList.toggle('open');
+  btn.textContent = open ? 'Show less ▴' : 'View all features ▾';
+}
+
+/* ==================== ENTRY ==================== */
+function startBuy(ed){
+  showScene('sceneBuy');
+  selectEdition(ed||'pro');
+  goStep(1);
+}
+
+/* ==================== EDITION ==================== */
+function selectEdition(ed){
+  S.edition = ed;
+  $('ed-pro').classList.toggle('sel', ed==='pro');
+  $('ed-prem').classList.toggle('sel', ed==='prem');
+  var isPrem = ed==='prem';
+  $('premNotice').style.display = isPrem ? 'block':'none';
+  $('proConfig').style.display = isPrem ? 'none':'block';
+  $('addonCard').style.display = isPrem ? 'none':'block';
+  var cont = $('continueBtn');
+  if(isPrem){
+    // premium = min 100 seats, quote based — no self-serve checkout
+    $('sumPlan').textContent='Premium';
+    $('sumCycle').textContent='Custom quote';
+    $('sumSeats').textContent='100+';
+    $('sumGift').textContent='—';
+    $('sumSub').textContent='Custom quote';
+    $('sumAddon').textContent='—';
+    $('sumTotal').textContent='Custom';
+    cont.textContent='Contact sales';
+    cont.setAttribute('onclick','openContact()');
+  } else {
+    cont.textContent='Continue';
+    cont.setAttribute('onclick','goStep(2)');
+    recompute();
+  }
+}
+
+/* ==================== CYCLE / TERM ==================== */
+function setCycle(c){
+  S.cycle=c;
+  $('cyc-monthly').classList.toggle('on', c==='monthly');
+  $('cyc-yearly').classList.toggle('on', c==='yearly');
+  buildTermOptions();
+  recompute();
+}
+function buildTermOptions(){
+  var sel=$('cfgTerm'); var prev=parseInt(sel.value)||1; sel.innerHTML='';
+  if(S.cycle==='yearly'){
+    for(var y=1;y<=3;y++){var o=document.createElement('option');o.value=y;o.textContent=y+(y>1?' years':' year');if(y===Math.min(prev,3))o.selected=true;sel.appendChild(o);}
+  } else {
+    for(var m=1;m<=12;m++){var o2=document.createElement('option');o2.value=m;o2.textContent=m+(m>1?' months':' month');if(m===Math.min(prev,12)&&prev<=12)o2.selected=true;sel.appendChild(o2);}
+    if(prev>12){sel.value=1;}
+  }
+}
+
+/* ==================== STEPPERS ==================== */
+function bumpSeats(d){var i=$('cfgSeats');var v=(parseInt(i.value)||5)+d;if(v<5)v=5;i.value=v;recompute();}
+function bumpUnits(d){var i=$('cfgUnits');var v=(parseInt(i.value)||0)+d;if(v<0)v=0;i.value=v;recompute();}
+
+/* ==================== COMPUTE ==================== */
+function recompute(){
+  if(S.edition==='prem') return;
+  var seats=parseInt($('cfgSeats').value)||5; if(seats<5){seats=5;}
+  var term=parseInt($('cfgTerm').value)||1;
+  var units=parseInt($('cfgUnits').value)||0;
+  if(units>0 && units<10000) units=10000;
+  if(units%10000!==0) units=Math.round(units/10000)*10000;
+
+  S.seats=seats; S.term=term; S.units=units;
+
+  var months = S.cycle==='yearly' ? term*12 : term;
+  var seatCost = S.cycle==='yearly' ? PRICE_SEAT_YEAR*seats*term : PRICE_SEAT_MONTH*seats*term;
+  var giftPerMonth = seats*500;
+  var unitsCost = units*UNIT_PRICE;
+  var subtotal = seatCost + unitsCost;
+
+  lastSubtotal = subtotal;
+
+  // reflect inputs
+  $('cfgGift').value = intc(giftPerMonth)+' units / month';
+  $('cfgUnitsCost').value = usd(unitsCost);
+
+  var cycleTxt = (S.cycle==='yearly' ? 'Annual · '+term+(term>1?' years':' year') : 'Monthly · '+term+(term>1?' months':' month'));
+  // edition card price reflects selected billing cycle
+  var edPrice = $('edProPrice');
+  if(edPrice){
+    edPrice.textContent = (S.cycle==='yearly'
+      ? '$'+PRICE_SEAT_YEAR+' / seat / year'
+      : '$'+PRICE_SEAT_MONTH+' / seat / month') + ' ·  Min. 5 seats';
+  }
+  // step1 summary
+  $('sumPlan').textContent='Professional';
+  $('sumCycle').textContent=cycleTxt;
+  $('sumSeats').textContent=seats;
+  $('sumGift').textContent=intc(giftPerMonth)+' / mo';
+  $('sumSub').textContent=usd(seatCost);
+  $('sumAddon').textContent = units? intc(units)+' units · '+usd(unitsCost) : '—';
+  $('sumTotal').textContent=usd(subtotal);
+}
+
+/* ==================== STEP NAV ==================== */
+function goStep(n){
+  document.querySelectorAll('#sceneBuy .panel').forEach(function(p){p.classList.remove('active');});
+  $('p-'+n).classList.add('active');
+  for(var i=1;i<=4;i++){var s=$('st-'+i);s.classList.remove('active','done');if(i<n)s.classList.add('done');if(i===n)s.classList.add('active');}
+  if(n===2) syncStep2();
+  if(n===3) syncStep3();
+  if(n===4) runProvision();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function planLabel(){return S.edition==='prem'?'Premium':'Professional';}
+function cycleLabel(){return S.cycle==='yearly' ? 'Annual · '+S.term+(S.term>1?' years':' year') : 'Monthly · '+S.term+(S.term>1?' months':' month');}
+
+function syncStep2(){
+  $('r2Plan').textContent=planLabel();
+  $('r2Cycle').textContent=cycleLabel();
+  $('r2Seats').textContent=S.seats;
+  $('r2Gift').textContent=intc(S.seats*500)+' / mo';
+  $('r2Addon').textContent=S.units? intc(S.units)+' units':'—';
+  $('r2Total').textContent=usd(lastSubtotal);
+  validateStep2();
+}
+
+function onCountryChange(){
+  S.country=$('coCountry').value;
+  var isMY = (S.country==='MY');
+  var hint=$('taxHint');
+  if(hint){
+    hint.textContent = isMY
+      ? 'Malaysian companies: applicable taxes (SST) apply.'
+      : 'Overseas companies: provide your tax ID for zero-rating / reverse charge where applicable.';
+  }
+  // Malaysia → registration no. & tax ID required (MyInvois); others → optional
+  $('regReq').style.display = isMY ? 'inline' : 'none';
+  $('regOpt').style.display = isMY ? 'none' : 'inline';
+  $('taxReq').style.display = isMY ? 'inline' : 'none';
+  $('taxOpt').style.display = isMY ? 'none' : 'inline';
+  $('regHint').textContent = isMY
+    ? 'Required for Malaysian companies\u2019 tax invoice.'
+    : 'Optional — used on the invoice & contract.';
+  validateStep2();
+}
+
+function validateStep2(){
+  var ok = $('coContact').value.trim() && $('coName').value.trim() && $('coEmail').value.trim() && $('agreeChk').checked && $('coCode').value.trim().length>=6;
+  if(($('coCountry').value)==='MY'){
+    ok = ok && $('coReg').value.trim() && $('coTax').value.trim();
+  }
+  $('toPayBtn').disabled = !ok;
+}
+
+function sendCode(){
+  var b=$('codeBtn'); b.disabled=true; $('codeOk').style.display='block';
+  var t=30; b.textContent='Resend ('+t+'s)';
+  var iv=setInterval(function(){t--;b.textContent='Resend ('+t+'s)';if(t<=0){clearInterval(iv);b.disabled=false;b.textContent='Send code';}},1000);
+}
+
+function syncStep3(){
+  S.country=$('coCountry').value;
+  var tax = TAX[S.country]||TAX.OTHER;
+  var taxAmt = lastSubtotal*tax.rate;
+  var total = lastSubtotal + taxAmt;
+  lastTax=taxAmt; lastTotal=total;
+
+  $('r3Plan').textContent=planLabel();
+  $('r3Cycle').textContent=cycleLabel();
+  $('r3Seats').textContent=S.seats;
+  $('r3Addon').textContent=S.units? intc(S.units)+' units':'—';
+  $('r3Sub').textContent=usd(lastSubtotal);
+  $('payAmount').textContent=usd(lastSubtotal);   // 外层只显示税前;含税最终额由 Stripe 收银台显示
+  $('payBtnAmt').textContent=usd(total);
+}
+
+/* ==================== PAYMENT ==================== */
+function doPay(){
+  var btn=$('payBtn'); btn.disabled=true; btn.textContent='Processing…';
+  setTimeout(function(){ btn.disabled=false; goStep(4); runProvision(); },1100);
+}
+
+/* ==================== PROVISIONING ==================== */
+var provTimer=null;
+function runProvision(){
+  var email = $('coEmail')?$('coEmail').value:'admin@techcorp.com.my';
+  $('doneEmail').textContent = email;
+  var itemsTxt = planLabel()+' · '+S.seats+' seats × '+S.term+(S.cycle==='yearly'?(S.term>1?' years':' year'):(S.term>1?' months':' month'));
+  if(S.units && S.units>0) itemsTxt += ' · +'+intc(S.units)+' Lingee units';
+  $('doneItems').textContent = itemsTxt;
+
+  // add-on units balance (purchased packs — valid for the term, prod + sandbox)
+  if(S.units && S.units>0){
+    $('doneAddonRow').style.display='flex';
+    $('doneAddonUnits').textContent = intc(S.units)+' units (production + sandbox, valid for the term)';
+  } else {
+    $('doneAddonRow').style.display='none';
+  }
+  // show provisioning card, hide result
+  $('provPending').style.display='block';
+  $('provResult').style.display='none';
+
+  // simulate provisioning completing → hide provisioning card, show result
+  if(provTimer) clearTimeout(provTimer);
+  provTimer=setTimeout(function(){
+    $('provPending').style.display='none';
+    $('provResult').style.display='block';
+  },1800);
+}
+
+/* ==================== INIT ==================== */
+buildTermOptions();
+recompute();
+onCountryChange();
+
+/* cursor-tracking glow on primary buttons */
+document.addEventListener('pointermove', function(e){
+  var btn = e.target.closest && e.target.closest('.btn-primary');
+  if(!btn) return;
+  var r = btn.getBoundingClientRect();
+  btn.style.setProperty('--gx', ((e.clientX - r.left) / r.width * 100) + '%');
+  btn.style.setProperty('--gy', ((e.clientY - r.top) / r.height * 100) + '%');
+});
+</script>
+</body>
+</html>
