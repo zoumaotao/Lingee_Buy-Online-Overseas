@@ -930,7 +930,7 @@ erDiagram
   <div class="note green">
     <b>v2 关键变化:</b>① 新增 <b>PRODUCT / SKU</b>(产品与价格分离,订单引用 SKU,币种从 SKU 带出);② 新增 <b>PAYMENT</b>(支付流水,每条=一次支付尝试,payment_failed 落此,订单 status 不污染);③ 新增 <b>ORDER_EVENT</b>(状态流转审计,只增不改);④ 每实体标 <b>SoT</b>:灵基后台权威,Stripe 仅支付执行;⑤ 合规明细在 COMPLIANCE_CHECK,订单只存汇总状态;⑥ 时间存 UTC、展示 GMT+8;金额用整数(分);点数用流水账本;⑦ 新增 <b>销售域(LEAD/OPPORTUNITY/CONTACT)</b>、<b>NOTIFICATION</b>(通知记录)、<b>SUPPORT_REQUEST</b>(售后工单,与售前 LEAD 分开)、<b>APPROVAL</b>(统一审批模型:退款/风控放行/红冲/协议发版,双人复核)与 <b>AUDIT_LOG</b>(操作审计);ORDER_EVENT 收敛为"订单状态历史"(订单详情时间线展示,不单设全局页)。
   </div>
-  <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">配合 lingee-order-states.html(状态机)、lingee-walkthrough.html(总走查)。落地按实际技术栈调整。</p>
+  <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">配合 lingee-order-states.html(状态机)、index.html(总走查)。落地按实际技术栈调整。</p>
 </div>
 <script>
   mermaid.initialize({ startOnLoad:true, theme:'base', securityLevel:'loose',
