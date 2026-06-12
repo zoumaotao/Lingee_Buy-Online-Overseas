@@ -96,6 +96,10 @@ td .sub{font-size:11px;color:var(--muted);margin-top:2px}
 .t-bad{background:#FEF2F2;color:#B91C1C}
 .t-info{background:#EEF2FF;color:#3730A3}
 .t-muted{background:#F1F5F9;color:#64748B}
+/* lead source channel tags */
+.t-trial{background:#EFF6FF;color:#1D4ED8}
+.t-pro{background:#ECFDF5;color:#047857}
+.t-premium{background:#F5F3FF;color:#6D28D9}
 
 /* ---------- buttons ---------- */
 .btn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.12s;background:#fff;color:#475569;border-color:#D5D8E3}
@@ -405,9 +409,9 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
 <!-- ============================ LEADS ============================ -->
 <div class="view" id="v-leads">
   <div class="topbar">
-    <div><div class="pg-title" data-en="Leads" data-zh="线索">Leads</div><div class="pg-desc" data-en="Unqualified interest — from Premium “Contact Sales” and marketing. No order exists yet." data-zh="未鉴定的兴趣 — 来自 Premium「Contact Sales」与市场留资。此时尚无订单。">Unqualified interest — from Premium “Contact Sales” and marketing. No order exists yet.</div></div>
+    <div><div class="pg-title" data-en="Leads" data-zh="线索">Leads</div><div class="pg-desc" data-en="Unqualified interest from three sources — Start Free Trial, Professional “Contact Sales”, and Premium “Contact Sales”. No order exists yet." data-zh="未鉴定的兴趣,来自三种来源 — Start Free Trial、Professional「Contact Sales」、Premium「Contact Sales」。此时尚无订单。">Unqualified interest from three sources — Start Free Trial, Professional “Contact Sales”, and Premium “Contact Sales”. No order exists yet.</div></div>
   </div>
-  <div class="alert alert-info" data-en="A Premium “Contact Sales” submission lands here. A lead is just interest until sales qualifies it. The system auto-scores and suggests (machine reduces noise + ranks); a human clicks Qualify to create an Opportunity (because deals enter the forecast and need an owner). Hard-fail rules (restricted country, below min seats, junk email) auto-disqualify." data-zh="选择 Premium 点「Contact Sales」提交的数据落在这里。线索只是“兴趣”。系统自动评分+给建议(机器降噪+排序),由人点「Qualify」升级为商机(因为商机进预测、需有人背责)。硬规则(受限国家/低于起售/垃圾邮箱)自动判不合格。">A Premium <b>“Contact Sales”</b> submission lands here. The system <b>auto-scores and suggests</b> (machine reduces noise + ranks); a <b>human clicks Qualify</b> to create an Opportunity (deals enter the forecast and need an owner). Hard-fail rules (restricted country, below min seats, junk email) auto-disqualify.</div>
+  <div class="alert alert-info" data-en="Leads come from three sources: ① Start Free Trial sign-ups — offer one-click account activation (upgrade the existing trial tenant); ② Professional “Contact Sales” — buyer wants Professional directly, create the order without the full pipeline; ③ Premium “Contact Sales” — needs sales qualification before becoming an Opportunity. The system auto-scores and suggests; a human decides. Hard-fail rules (restricted country, below min seats, junk email) auto-disqualify." data-zh="线索来自三种来源:① Start Free Trial 试用注册 — 可一键开通账号(升级现有试用租户);② Professional「Contact Sales」— 买家意向直接购买专业版,直接建订单、不走完整管线;③ Premium「Contact Sales」— 需销售鉴定后才升级为商机。系统自动评分+建议,由人工决策。硬规则(受限国家/低于起售/垃圾邮箱)自动判不合格。"><b>Three sources:</b> ① <b>Start Free Trial</b> — offer one-click account activation; ② <b>Professional “Contact Sales”</b> — buyer wants Professional directly; ③ <b>Premium “Contact Sales”</b> — needs sales qualification. The system <b>auto-scores and suggests</b>; a <b>human decides</b>. Hard-fail rules (restricted country, below min seats, junk email) auto-disqualify.</div>
   <div class="stats stats-5">
     <div class="stat"><div class="lbl" data-en="New" data-zh="新建">New</div><div class="val blue">3</div></div>
     <div class="stat"><div class="lbl" data-en="Contacted" data-zh="已联系">Contacted</div><div class="val">4</div></div>
@@ -417,19 +421,19 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
   </div>
   <div class="card">
     <div class="card-h"><div class="ttl" data-en="Lead list" data-zh="线索列表">Lead list</div>
-      <div class="filters"><select><option data-en="All sources" data-zh="全部来源">All sources</option><option>website_contact</option><option>in_product_contact</option><option>free_trial_signup</option><option>volume</option><option>marketing</option></select><select><option data-en="All status" data-zh="全部状态">All status</option><option>new</option><option>contacted</option><option>qualified</option><option>disqualified</option></select></div>
+      <div class="filters"><select><option data-en="All sources" data-zh="全部来源">All sources</option><option data-en="Free Trial" data-zh="免费试用">Free Trial</option><option data-en="Professional" data-zh="专业版">Professional</option><option data-en="Premium" data-zh="高级版">Premium</option></select><select><option data-en="All status" data-zh="全部状态">All status</option><option>new</option><option>contacted</option><option>qualified</option><option>disqualified</option></select></div>
     </div>
     <table>
-      <thead><tr><th data-en="Lead" data-zh="线索">Lead</th><th data-en="Company / country" data-zh="公司 / 国家">Company / country</th><th data-en="Source" data-zh="来源">Source</th><th data-en="Score" data-zh="评分">Score</th><th data-en="Auto-suggestion" data-zh="系统建议">Auto-suggestion</th><th data-en="Status" data-zh="状态">Status</th><th data-en="Action (human)" data-zh="操作(人工)">Action (human)</th></tr></thead>
+      <thead><tr><th data-en="Lead" data-zh="线索">Lead</th><th data-en="Company / country" data-zh="公司 / 国家">Company / country</th><th data-en="Source" data-zh="来源">Source</th><th data-en="Score" data-zh="评分">Score</th><th data-en="Auto-suggestion" data-zh="系统建议">Auto-suggestion</th><th data-en="Status" data-zh="状态">Status</th><th data-en="Action" data-zh="操作">Action</th><th data-en="Detail" data-zh="详情">Detail</th></tr></thead>
       <tbody>
-        <tr><td class="mono">LD-0008</td><td><div class="co">Skyline Tech Sdn. Bhd.</div><div class="sub">Malaysia · trial active</div></td><td><span data-enum="in_product_contact"></span>in_product_contact</span><div class="sub" data-en="PQL · high usage" data-zh="PQL · 用量高">PQL · high usage</div></td><td><b style="color:var(--green)">88</b> · hot</td><td><span class="tag t-ok" data-en="recommend qualify" data-zh="建议合格">recommend qualify</span></td><td><span class="tag t-warn">contacted</span></td><td><button class="btn pri sm" onclick="openModal('m-leadQualify')" data-en="Qualify" data-zh="鉴定合格">Qualify</button></td></tr>
-        <tr><td class="mono">LD-0007</td><td><div class="co">Oceanic Group Bhd.</div><div class="sub">Malaysia</div></td><td><span data-enum="website_contact">website_contact</span></td><td><b style="color:var(--green)">74</b> · hot</td><td><span class="tag t-ok" data-en="recommend qualify" data-zh="建议合格">recommend qualify</span></td><td><span class="tag t-info">new</span></td><td><button class="btn pri sm" onclick="openModal('m-leadQualify')" data-en="Qualify" data-zh="鉴定合格">Qualify</button></td></tr>
-        <tr><td class="mono">LD-0006</td><td><div class="co">Garuda Logistics</div><div class="sub">Indonesia · export</div></td><td><span data-enum="website_contact">website_contact</span></td><td><b style="color:var(--amber)">52</b> · warm</td><td><span class="tag t-warn" data-en="needs review" data-zh="待人工核">needs review</span></td><td><span class="tag t-warn">contacted</span></td><td><button class="btn pri sm" onclick="openModal('m-leadQualify')" data-en="Qualify" data-zh="鉴定合格">Qualify</button> <button class="btn sm" onclick="openModal('m-leadDisqualify')" data-en="Disqualify" data-zh="判不合格">Disqualify</button></td></tr>
-        <tr><td class="mono">LD-0005</td><td><div class="co">Lion City Retail</div><div class="sub">Singapore · export · trial</div></td><td><span data-enum="free_trial_signup">free_trial_signup</span><div class="sub" data-en="then asked for quote" data-zh="后续主动问价">then asked for quote</div></td><td><b style="color:var(--green)">81</b> · hot</td><td><span class="tag t-ok" data-en="recommend qualify" data-zh="建议合格">recommend qualify</span></td><td><span class="tag t-ok">qualified</span><div class="sub" data-en="by Lim · 06-04" data-zh="Lim 鉴定 · 06-04">by Lim · 06-04</div></td><td><button class="btn sm" onclick="go('opportunities',navByName('Opportunities'))" data-en="View deal" data-zh="看商机">View deal</button></td></tr>
-        <tr><td class="mono">LD-0004</td><td><div class="co">Quick Mart</div><div class="sub">Malaysia</div></td><td><span data-enum="marketing">marketing</span></td><td><b style="color:var(--muted)">18</b> · cold</td><td><span class="tag t-bad" data-en="auto-disqualify" data-zh="自动判不合格">auto-disqualify</span><div class="sub" data-en="30 seats < Premium min" data-zh="30 席 < Premium 起售">30 seats < Premium min</div></td><td><span class="tag t-muted">disqualified</span><div class="sub" data-en="by system" data-zh="系统自动">by system</div></td><td><button class="btn sm" onclick="openModal('m-leadDetail')" data-en="Detail" data-zh="详情">Detail</button></td></tr>
+        <tr><td class="mono">LD-0008</td><td><div class="co">Skyline Tech Sdn. Bhd.</div><div class="sub">Malaysia · trial active</div></td><td><span class="tag t-trial plain" data-en="Free Trial" data-zh="免费试用">Free Trial</span></td><td><b style="color:var(--green)">88</b> · hot</td><td><span class="tag t-ok" data-en="recommend activate" data-zh="建议开通">recommend activate</span></td><td><span class="tag t-warn">contacted</span></td><td><button class="btn green sm" onclick="openModal('m-trialActivate')" data-en="One-click activate" data-zh="一键开通账号">One-click activate</button></td><td><button class="btn sm" onclick="openModal('m-leadDetail')" data-en="Detail" data-zh="查看详情">Detail</button></td></tr>
+        <tr><td class="mono">LD-0007</td><td><div class="co">Oceanic Group Bhd.</div><div class="sub">Malaysia</div></td><td><span class="tag t-pro plain" data-en="Professional" data-zh="专业版">Professional</span></td><td><b style="color:var(--green)">74</b> · hot</td><td><span class="tag t-ok" data-en="buy Professional" data-zh="直接购买专业版">buy Professional</span></td><td><span class="tag t-info">new</span></td><td><button class="btn pri sm" onclick="openModal('m-proPurchase')" data-en="Buy Professional" data-zh="购买专业版">Buy Professional</button></td><td><button class="btn sm" onclick="openModal('m-leadDetail')" data-en="Detail" data-zh="查看详情">Detail</button></td></tr>
+        <tr><td class="mono">LD-0006</td><td><div class="co">Garuda Logistics</div><div class="sub">Indonesia · export</div></td><td><span class="tag t-premium plain" data-en="Premium" data-zh="高级版">Premium</span></td><td><b style="color:var(--amber)">52</b> · warm</td><td><span class="tag t-warn" data-en="needs review" data-zh="待人工核">needs review</span></td><td><span class="tag t-warn">contacted</span></td><td><button class="btn pri sm" onclick="openModal('m-leadQualify')" data-en="Convert to opportunity" data-zh="转商机">Convert to opportunity</button></td><td><button class="btn sm" onclick="openModal('m-leadDetail')" data-en="Detail" data-zh="查看详情">Detail</button></td></tr>
+        <tr><td class="mono">LD-0005</td><td><div class="co">Lion City Retail</div><div class="sub">Singapore · export</div></td><td><span class="tag t-premium plain" data-en="Premium" data-zh="高级版">Premium</span></td><td><b style="color:var(--green)">81</b> · hot</td><td><span class="tag t-ok" data-en="recommend qualify" data-zh="建议合格">recommend qualify</span></td><td><span class="tag t-ok">qualified</span><div class="sub" data-en="by Lim · 06-04" data-zh="Lim 鉴定 · 06-04">by Lim · 06-04</div></td><td><button class="btn pri sm" onclick="openModal('m-leadQualify')" data-en="Convert to opportunity" data-zh="转商机">Convert to opportunity</button></td><td><button class="btn sm" onclick="openModal('m-leadDetail')" data-en="Detail" data-zh="查看详情">Detail</button></td></tr>
+        <tr><td class="mono">LD-0004</td><td><div class="co">Quick Mart</div><div class="sub">Malaysia</div></td><td><span class="tag t-premium plain" data-en="Premium" data-zh="高级版">Premium</span></td><td><b style="color:var(--muted)">18</b> · cold</td><td><span class="tag t-bad" data-en="auto-disqualify" data-zh="自动判不合格">auto-disqualify</span><div class="sub" data-en="30 seats < Premium min" data-zh="30 席 < Premium 起售">30 seats < Premium min</div></td><td><span class="tag t-muted">disqualified</span><div class="sub" data-en="by system" data-zh="系统自动">by system</div></td><td><button class="btn pri sm" onclick="openModal('m-leadQualify')" data-en="Convert to opportunity" data-zh="转商机">Convert to opportunity</button></td><td><button class="btn sm" onclick="openModal('m-leadDetail')" data-en="Detail" data-zh="查看详情">Detail</button></td></tr>
       </tbody>
     </table>
-    <div class="devnote" data-en="Score = Fit (size / country / min-seat threshold) + Intent (source, trial usage, asked for quote). in_product_contact and trial-with-usage rank highest (PQL). “Qualify” links/creates an ACCOUNT (prospect) and opens an Opportunity; it is always a human decision (qualified_by recorded). auto-disqualify is the only status the system sets by itself." data-zh="评分 = Fit(规模/国家/起售门槛)+ Intent(来源/试用用量/是否问价)。产品内询价与“试用且有用量”得分最高(PQL)。点「Qualify」会关联/新建 ACCOUNT(prospect)并开商机,这<b>始终是人工决定</b>(记录 qualified_by)。只有 auto-disqualify 是系统自己置的状态。">Score = Fit (size / country / min-seat threshold) + Intent (source, trial usage, asked for quote). <code>in_product_contact</code> and trial-with-usage rank highest (PQL). <b>Qualify is always a human decision</b> (records <code>qualified_by</code>); only <code>auto-disqualify</code> is set by the system.</div>
+    <div class="devnote" data-en="Score = Fit (size / country / min-seat threshold) + Intent (source, trial usage, asked for quote). free_trial_signup (with usage) and Professional “Contact Sales” rank highest. Free-trial leads offer one-click activation (upgrade the existing trial tenant). Professional “Contact Sales” buys Professional directly (creates an ORDER, skips the opportunity pipeline). Premium “Contact Sales” must be qualified by a human (records qualified_by) → Opportunity. Only auto-disqualify is set by the system." data-zh="评分 = Fit(规模/国家/起售门槛)+ Intent(来源/试用用量/是否问价)。free_trial_signup(有用量)与 Professional「Contact Sales」得分最高。试用线索可一键开通(升级现有试用租户);Professional「Contact Sales」直接购买专业版(建 ORDER,跳过商机管线);Premium「Contact Sales」须由人工鉴定(记 qualified_by)→ 商机。只有 auto-disqualify 是系统自己置的状态。">Score = Fit + Intent. <code>free_trial_signup</code> → one-click activation; <code>professional_contact_sales</code> → buys Professional directly (creates an <code>ORDER</code>, skips the pipeline); <code>premium_contact_sales</code> → <b>human Qualify</b> (records <code>qualified_by</code>) → Opportunity. Only <code>auto-disqualify</code> is set by the system.</div>
   </div>
 </div>
 
@@ -462,6 +466,55 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
   </div>
 </div>
 
+<!-- MODAL: one-click activate (free_trial_signup) -->
+<div class="modal-bg" id="m-trialActivate" onclick="if(event.target===this)closeModal('m-trialActivate')">
+  <div class="modal">
+    <div class="modal-h">
+      <div><div class="modal-t" data-en="One-click account activation" data-zh="一键开通账号">One-click account activation</div><div class="modal-d" data-en="Lead LD-0008 — Skyline Tech · from Start Free Trial" data-zh="线索 LD-0008 — Skyline Tech · 来自 Start Free Trial">Lead LD-0008 — Skyline Tech · from Start Free Trial</div></div>
+      <button class="modal-x" onclick="closeModal('m-trialActivate')">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="alert alert-ok" data-en="This lead already has a trial account with verified usage. One-click activation upgrades the existing trial tenant to a paid account — no re-provisioning, no new order flow." data-zh="该线索已有试用账号且用量已验证。一键开通会把现有试用租户升级为正式付费账号 — 无需重新建租户、无需走新订单流程。">This lead already has a trial account with verified usage. <b>One-click activation</b> upgrades the existing trial tenant to a paid account — no re-provisioning, no new order flow.</div>
+      <div class="kv2">
+        <div class="row"><span class="l" data-en="Company / country" data-zh="公司 / 国家">Company / country</span><span class="r">Skyline Tech Sdn. Bhd. · Malaysia</span></div>
+        <div class="row"><span class="l" data-en="Trial tenant" data-zh="试用租户">Trial tenant</span><span class="r mono">skyline-trial.lingee.app</span></div>
+        <div class="row"><span class="l" data-en="Contact" data-zh="联系人">Contact</span><span class="r">admin@skylinetech.com.my</span></div>
+        <div class="row"><span class="l" data-en="Plan" data-zh="套餐">Plan</span><span class="r">Professional</span></div>
+        <div class="row"><span class="l" data-en="Seats" data-zh="席位">Seats</span><span class="r">25</span></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="closeModal('m-trialActivate')" data-en="Cancel" data-zh="取消">Cancel</button>
+        <button class="btn green" onclick="closeModal('m-trialActivate')" data-en="Activate account" data-zh="确认开通账号">Activate account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: buy Professional (professional_contact_sales) -->
+<div class="modal-bg" id="m-proPurchase" onclick="if(event.target===this)closeModal('m-proPurchase')">
+  <div class="modal">
+    <div class="modal-h">
+      <div><div class="modal-t" data-en="Buy Professional — Contact Sales" data-zh="购买专业版 — Contact Sales">Buy Professional — Contact Sales</div><div class="modal-d" data-en="Lead LD-0007 — Oceanic Group · direct Professional purchase" data-zh="线索 LD-0007 — Oceanic Group · 直接购买专业版">Lead LD-0007 — Oceanic Group · direct Professional purchase</div></div>
+      <button class="modal-x" onclick="closeModal('m-proPurchase')">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="alert alert-info" data-en="Submitted from the Professional tier “Contact Sales” form. The buyer intends to purchase Professional directly — issue a Stripe invoice / create the ORDER without the full opportunity pipeline." data-zh="来自 Professional 套餐「Contact Sales」表单。买家意向直接购买专业版 — 开 Stripe 发票 / 直接建 ORDER,不走完整商机管线。">Submitted from the Professional “Contact Sales” form. The buyer intends to purchase Professional directly — create the <b>ORDER</b> without the full pipeline.</div>
+      <div class="kv2">
+        <div class="row"><span class="l" data-en="Full name" data-zh="姓名">Full name</span><span class="r">Daniel Tan</span></div>
+        <div class="row"><span class="l" data-en="Business email" data-zh="企业邮箱">Business email</span><span class="r">daniel@oceanicgroup.com.my</span></div>
+        <div class="row"><span class="l" data-en="Phone number" data-zh="电话">Phone number</span><span class="r">+60 12-345 6789</span></div>
+        <div class="row"><span class="l" data-en="Company / organization" data-zh="公司 / 组织">Company / organization</span><span class="r">Oceanic Group Bhd.</span></div>
+        <div class="row"><span class="l" data-en="Budget (USD / year)" data-zh="预算 (USD / 年)">Budget (USD / year)</span><span class="r">$120,000</span></div>
+        <div class="row"><span class="l" data-en="Expected seats" data-zh="预期席位">Expected seats</span><span class="r">220</span></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="closeModal('m-proPurchase')" data-en="Cancel" data-zh="取消">Cancel</button>
+        <button class="btn pri" onclick="closeModal('m-proPurchase')" data-en="Create Professional order" data-zh="创建专业版订单">Create Professional order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: lead detail -->
 <div class="modal-bg" id="m-leadDetail" onclick="if(event.target===this)closeModal('m-leadDetail')">
   <div class="modal">
@@ -471,9 +524,12 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
     </div>
     <div class="modal-b">
       <div class="kv2">
+        <div class="row"><span class="l" data-en="Source" data-zh="来源">Source</span><span class="r"><span class="tag t-premium plain" data-en="Premium" data-zh="高级版">Premium</span></span></div>
+        <div class="row"><span class="l" data-en="Full name" data-zh="姓名">Full name</span><span class="r">Aisyah Rahman</span></div>
+        <div class="row"><span class="l" data-en="Business email" data-zh="企业邮箱">Business email</span><span class="r">ops@quickmart.my</span></div>
+        <div class="row"><span class="l" data-en="Phone number" data-zh="电话">Phone number</span><span class="r">+60 3-2099 8800</span></div>
         <div class="row"><span class="l" data-en="Company / country" data-zh="公司 / 国家">Company / country</span><span class="r">Quick Mart · Malaysia</span></div>
-        <div class="row"><span class="l" data-en="Source" data-zh="来源">Source</span><span class="r mono">marketing</span></div>
-        <div class="row"><span class="l" data-en="Contact" data-zh="联系人">Contact</span><span class="r">ops@quickmart.my</span></div>
+        <div class="row"><span class="l" data-en="Budget (USD / year)" data-zh="预算 (USD / 年)">Budget (USD / year)</span><span class="r">$12,000</span></div>
         <div class="row"><span class="l" data-en="Expected seats" data-zh="预期席位">Expected seats</span><span class="r">30</span></div>
         <div class="row"><span class="l" data-en="Score" data-zh="评分">Score</span><span class="r"><b style="color:var(--muted)">18</b> · cold</span></div>
         <div class="row"><span class="l" data-en="Status" data-zh="状态">Status</span><span class="r"><span class="tag t-muted plain">disqualified</span> <span class="sub" data-en="by system" data-zh="系统自动">by system</span></span></div>
@@ -1379,10 +1435,10 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
   <div class="card">
     <div class="card-h"><div class="ttl" data-en="Consent records" data-zh="同意记录">Consent records</div><div class="filters"><select><option data-en="All documents" data-zh="全部文档">All documents</option><option>agreement</option><option>dpa</option><option>notice</option></select></div></div>
     <table>
-      <thead><tr><th data-en="Order" data-zh="订单">Order</th><th data-en="Subject (contact)" data-zh="主体(联系人)">Subject (contact)</th><th data-en="Document" data-zh="文档">Document</th><th data-en="Version" data-zh="版本">Version</th><th data-en="Accepted (GMT+8)" data-zh="同意时间 (GMT+8)">Accepted (GMT+8)</th><th>IP</th></tr></thead>
+      <thead><tr><th data-en="Order" data-zh="订单">Order</th><th data-en="Company" data-zh="企业名称">Company</th><th data-en="Contact name" data-zh="联系人姓名">Contact name</th><th data-en="Business email" data-zh="企业邮箱">Business email</th><th data-en="Document" data-zh="文档">Document</th><th data-en="Version" data-zh="版本">Version</th><th data-en="Accepted (GMT+8)" data-zh="同意时间 (GMT+8)">Accepted (GMT+8)</th><th>IP</th></tr></thead>
       <tbody>
-        <tr><td class="mono" data-link="order">LG-OS-20260605-0007</td><td>Lim Wei · admin@techcorp.com.my</td><td>agreement</td><td>v2.1</td><td>2026-06-05 14:30</td><td class="mono">175.139.x.x</td></tr>
-        <tr><td class="mono" data-link="order">LG-OS-20260605-0009</td><td>Tan Mei · ops@datasys.sg</td><td>agreement</td><td>v2.1</td><td>2026-06-05 11:01</td><td class="mono">203.116.x.x</td></tr>
+        <tr><td class="mono" data-link="order">LG-OS-20260605-0007</td><td>TechCorp Sdn. Bhd.</td><td>Lim Wei</td><td>admin@techcorp.com.my</td><td>agreement</td><td>v2.1</td><td>2026-06-05 14:30</td><td class="mono">175.139.x.x</td></tr>
+        <tr><td class="mono" data-link="order">LG-OS-20260605-0009</td><td>DataSys Pte. Ltd.</td><td>Tan Mei</td><td>ops@datasys.sg</td><td>agreement</td><td>v2.1</td><td>2026-06-05 11:01</td><td class="mono">203.116.x.x</td></tr>
       </tbody>
     </table>
     <div class="devnote" data-en="Subject is the page contact (login/order owner), not the Stripe cardholder — they may differ, and consent happens before payment." data-zh="主体是页面联系人(登录/下单人),不是 Stripe 持卡人——两者可能不同,且同意发生在付款前。">Subject is the page contact (login/order owner), <b>not</b> the Stripe cardholder — they may differ, and consent happens before payment.</div>
@@ -1395,19 +1451,27 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
     <div><div class="pg-title" data-en="Agreements & Versions" data-zh="协议版本库">Agreements & Versions</div><div class="pg-desc" data-en="Versioned legal documents · each consent record is bound to the exact version accepted" data-zh="版本化的法律文档 · 每条同意记录绑定到当时接受的确切版本">Versioned legal documents · each consent record is bound to the exact version accepted</div></div>
   </div>
   <div class="alert alert-info" data-en="Legal-dimension compliance. When a document is revised, old versions stay retrievable and every CONSENT_LOG entry keeps pointing to the version the customer actually accepted (auditable). Final legal text is signed off by counsel (TODO L1)." data-zh="法律维度合规。文档改版后旧版本仍可追溯,每条同意记录始终指向客户当时实际接受的版本(可审计)。正式文本由法务定稿(TODO L1)。"><b>Legal-dimension compliance.</b> On revision, old versions stay retrievable and every <code>CONSENT_LOG</code> entry keeps pointing to the version the customer actually accepted (auditable). Final text is signed off by counsel (TODO L1).</div>
+  <div class="stats">
+    <div class="stat"><div class="lbl" data-en="Current documents" data-zh="现行文档">Current documents</div><div class="val blue">5</div></div>
+    <div class="stat"><div class="lbl" data-en="Draft / in review" data-zh="草稿 / 待法务">Draft / in review</div><div class="val warn">1</div></div>
+    <div class="stat"><div class="lbl" data-en="Superseded (archived)" data-zh="已取代(归档)">Superseded (archived)</div><div class="val">1</div></div>
+    <div class="stat"><div class="lbl" data-en="Active consents bound" data-zh="绑定生效同意">Active consents bound</div><div class="val green">97</div></div>
+  </div>
   <div class="card">
-    <div class="card-h"><div class="ttl" data-en="Document versions" data-zh="文档版本">Document versions</div><div class="filters"><button class="btn pri sm" onclick="openModal('m-confirm')" data-en="+ New version" data-zh="+ 新建版本">+ New version</button><select><option data-en="All documents" data-zh="全部文档">All documents</option><option>agreement</option><option>dpa</option><option>privacy</option><option>notice</option></select></div></div>
+    <div class="card-h"><div class="ttl" data-en="Document versions" data-zh="文档版本">Document versions</div><div class="filters"><button class="btn pri sm" onclick="openModal('m-confirm')" data-en="+ New version" data-zh="+ 新建版本">+ New version</button><select><option data-en="All documents" data-zh="全部文档">All documents</option><option data-en="agreement" data-zh="协议">agreement</option><option data-en="terms" data-zh="服务条款">terms</option><option data-en="confirmation" data-zh="订购确认">confirmation</option><option data-en="privacy" data-zh="隐私">privacy</option></select></div></div>
     <table>
-      <thead><tr><th data-en="Document" data-zh="文档">Document</th><th data-en="Version" data-zh="版本">Version</th><th data-en="Status" data-zh="状态">Status</th><th data-en="Effective (GMT+8)" data-zh="生效 (GMT+8)">Effective (GMT+8)</th><th data-en="Consents bound" data-zh="绑定同意数">Consents bound</th><th></th></tr></thead>
+      <thead><tr><th data-en="Document" data-zh="文档">Document</th><th data-en="Type" data-zh="类型">Type</th><th data-en="Version" data-zh="版本">Version</th><th data-en="Status" data-zh="状态">Status</th><th data-en="Effective period (GMT+8)" data-zh="生效区间 (GMT+8)">Effective period (GMT+8)</th><th data-en="Approved by" data-zh="批准人">Approved by</th><th data-en="Consents" data-zh="绑定同意">Consents</th><th></th></tr></thead>
       <tbody>
-        <tr><td data-en="Service Subscription Agreement" data-zh="服务订阅协议">Service Subscription Agreement</td><td>v2.1</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-28</td><td>38</td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
-        <tr><td data-en="Service Subscription Agreement" data-zh="服务订阅协议">Service Subscription Agreement</td><td>v2.0</td><td><span class="tag t-muted" data-en="superseded" data-zh="已被取代">superseded</span></td><td>2026-03-01</td><td>54</td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
-        <tr><td>Data Processing Agreement (DPA)</td><td>v1.2</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-10</td><td>21</td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
-        <tr><td data-en="Privacy Policy" data-zh="隐私政策">Privacy Policy</td><td>v1.1</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-10</td><td>—</td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
-        <tr><td data-en="Purchase Notice" data-zh="购买须知">Purchase Notice</td><td>v2.1</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-28</td><td>38</td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
+        <tr><td data-en="Subscription Service Agreement and Purchase Notice" data-zh="灵基（Lingee）服务订阅协议及购买须知">Subscription Service Agreement and Purchase Notice</td><td><span class="tag t-info plain" data-en="agreement" data-zh="协议">agreement</span></td><td>v2.2</td><td><span class="tag t-warn" data-en="in review" data-zh="待法务">in review</span><div class="sub" data-en="draft · awaiting counsel" data-zh="草稿 · 待法务定稿">draft · awaiting counsel</div></td><td class="sub" data-en="— / pending" data-zh="— / 待定">— / pending</td><td class="sub" data-en="pending sign-off" data-zh="待签署">pending sign-off</td><td>—</td><td><button class="btn sm" onclick="openModal('m-versionDiff')" data-en="Compare" data-zh="对比">Compare</button></td></tr>
+        <tr><td data-en="Subscription Service Agreement and Purchase Notice" data-zh="灵基（Lingee）服务订阅协议及购买须知">Subscription Service Agreement and Purchase Notice</td><td><span class="tag t-info plain" data-en="agreement" data-zh="协议">agreement</span></td><td>v2.1</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-28 → <span data-en="present" data-zh="至今">present</span></td><td data-en="Counsel · S. Lim" data-zh="法务 · S. Lim">Counsel · S. Lim</td><td><span class="lnk" onclick="go('consent',navByName('Consent Log'))">38</span></td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button> <button class="btn sm" onclick="openModal('m-versionDiff')" data-en="Compare" data-zh="对比">Compare</button></td></tr>
+        <tr><td data-en="Subscription Service Agreement and Purchase Notice" data-zh="灵基（Lingee）服务订阅协议及购买须知">Subscription Service Agreement and Purchase Notice</td><td><span class="tag t-info plain" data-en="agreement" data-zh="协议">agreement</span></td><td>v2.0</td><td><span class="tag t-muted" data-en="superseded" data-zh="已取代">superseded</span></td><td>2026-03-01 → 2026-05-28</td><td data-en="Counsel · S. Lim" data-zh="法务 · S. Lim">Counsel · S. Lim</td><td><span class="lnk" onclick="go('consent',navByName('Consent Log'))">54</span></td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button> <button class="btn sm" onclick="openModal('m-versionDiff')" data-en="Compare" data-zh="对比">Compare</button></td></tr>
+        <tr><td data-en="Kingdee Cloud Platform Account Service Terms" data-zh="金蝶云平台账号服务条款">Kingdee Cloud Platform Account Service Terms</td><td><span class="tag t-info plain" data-en="terms" data-zh="服务条款">terms</span></td><td>v1.0</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-10 → <span data-en="present" data-zh="至今">present</span></td><td data-en="Counsel · S. Lim" data-zh="法务 · S. Lim">Counsel · S. Lim</td><td><span class="lnk" onclick="go('consent',navByName('Consent Log'))">38</span></td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
+        <tr><td data-en="Lingee Product Order Confirmation" data-zh="灵基（Lingee）产品订购确认书">Lingee Product Order Confirmation</td><td><span class="tag t-pro plain" data-en="confirmation" data-zh="订购确认">confirmation</span></td><td>v1.3</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-28 → <span data-en="present" data-zh="至今">present</span></td><td data-en="Ops · Wong" data-zh="运营 · Wong">Ops · Wong</td><td><span class="lnk" onclick="go('consent',navByName('Consent Log'))">38</span></td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
+        <tr><td data-en="Terms of Service" data-zh="用户协议">Terms of Service</td><td><span class="tag t-info plain" data-en="terms" data-zh="服务条款">terms</span></td><td>v2.0</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-10 → <span data-en="present" data-zh="至今">present</span></td><td data-en="Counsel · S. Lim" data-zh="法务 · S. Lim">Counsel · S. Lim</td><td><span class="lnk" onclick="go('consent',navByName('Consent Log'))">38</span></td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
+        <tr><td data-en="Privacy Policy" data-zh="隐私政策">Privacy Policy</td><td><span class="tag t-premium plain" data-en="privacy" data-zh="隐私">privacy</span></td><td>v1.1</td><td><span class="tag t-ok" data-en="current" data-zh="现行">current</span></td><td>2026-05-10 → <span data-en="present" data-zh="至今">present</span></td><td data-en="DPO · R. Kumar" data-zh="数据保护官 · R. Kumar">DPO · R. Kumar</td><td>—</td><td><button class="btn sm" onclick="openModal('m-fileAction')" data-en="View" data-zh="查看">View</button></td></tr>
       </tbody>
     </table>
-    <div class="devnote" data-en="Consent stores the version string (e.g. v2.1), not a copy of the text — the authoritative text lives here. This proves “which exact terms did the customer agree to” for B2B disputes (TODO L5)." data-zh="同意记录只存版本号(如 v2.1),不存正文副本——权威正文在此。用于 B2B 纠纷时证明“客户当时同意的是哪一版条款”(TODO L5)。">Consent stores the version string (e.g. <code>v2.1</code>), not a copy of the text — authoritative text lives here. Proves “which exact terms did the customer agree to” for disputes (TODO L5).</div>
+    <div class="devnote" data-en="Lifecycle: draft → in review (counsel sign-off) → current → superseded — only one version per document is current at a time. Consent stores the version string (e.g. v2.1), not a copy of the text; the authoritative text lives here and Compare shows the clause-level diff. Proves “which exact terms did the customer agree to” for disputes (TODO L5)." data-zh="生命周期:草稿 → 待法务(签署)→ 现行 → 已取代——每个文档同一时间只有一个现行版本。同意记录只存版本号(如 v2.1),不存正文副本;权威正文在此,「对比」展示条款级 diff。用于纠纷时证明“客户当时同意的是哪一版条款”(TODO L5)。">Lifecycle: <b>draft → in review (counsel sign-off) → current → superseded</b> — only one version per document is current at a time. Consent stores the version string (e.g. <code>v2.1</code>), not a copy of the text; authoritative text lives here and <b>Compare</b> shows the clause-level diff. Proves “which exact terms did the customer agree to” for disputes (TODO L5).</div>
   </div>
 </div>
 
@@ -1793,6 +1857,33 @@ body[data-lang="zh"] .devnote::before{content:'⚙ 设计说明 · 上线移除 
         <button class="btn" onclick="closeModal('m-compliance')" data-en="Cancel" data-zh="取消">Cancel</button>
         <button class="btn red" onclick="closeModal('m-compliance')" data-en="Block" data-zh="拦截">Block</button>
         <button class="btn green" onclick="closeModal('m-compliance')" data-en="Clear" data-zh="放行">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: compare agreement versions -->
+<div class="modal-bg" id="m-versionDiff" onclick="if(event.target===this)closeModal('m-versionDiff')">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-h">
+      <div><div class="modal-t" data-en="Compare versions — Subscription Service Agreement and Purchase Notice" data-zh="版本对比 — 灵基（Lingee）服务订阅协议及购买须知">Compare versions — Subscription Service Agreement and Purchase Notice</div><div class="modal-d" data-en="v2.0 → v2.1 · clause-level changes" data-zh="v2.0 → v2.1 · 条款级变更">v2.0 → v2.1 · clause-level changes</div></div>
+      <button class="modal-x" onclick="closeModal('m-versionDiff')">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="kv2">
+        <div class="row"><span class="l">v2.0</span><span class="r"><span class="tag t-muted plain" data-en="superseded · 2026-03-01 → 2026-05-28" data-zh="已取代 · 2026-03-01 → 2026-05-28">superseded · 2026-03-01 → 2026-05-28</span></span></div>
+        <div class="row"><span class="l">v2.1</span><span class="r"><span class="tag t-ok plain" data-en="current · since 2026-05-28" data-zh="现行 · 2026-05-28 起">current · since 2026-05-28</span></span></div>
+      </div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="border-left:3px solid var(--green);background:#F0FDF4;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px"><b data-en="Added" data-zh="新增">Added</b> · <span data-en="§12 Data residency — data stored and processed in Malaysia (PDPA 2010)." data-zh="§12 数据驻留 — 数据存储与处理位于马来西亚(PDPA 2010)。">§12 Data residency — data stored and processed in Malaysia (PDPA 2010).</span></div>
+        <div style="border-left:3px solid var(--amber);background:#FFFBEB;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px"><b data-en="Changed" data-zh="变更">Changed</b> · <span data-en="§4.3 Auto-renewal notice period 30 → 60 days." data-zh="§4.3 自动续费通知期 30 → 60 天。">§4.3 Auto-renewal notice period 30 → 60 days.</span></div>
+        <div style="border-left:3px solid var(--amber);background:#FFFBEB;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px"><b data-en="Changed" data-zh="变更">Changed</b> · <span data-en="§7 Liability cap 6 → 12 months of fees." data-zh="§7 责任上限 6 → 12 个月费用。">§7 Liability cap 6 → 12 months of fees.</span></div>
+        <div style="border-left:3px solid var(--red);background:#FEF2F2;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px"><b data-en="Removed" data-zh="删除">Removed</b> · <span data-en="§19 Legacy fax-notice clause." data-zh="§19 旧版传真通知条款。">§19 Legacy fax-notice clause.</span></div>
+      </div>
+      <div class="devnote" data-en="Prototype: the live diff renders from the stored version texts on launch. Existing CONSENT_LOG rows stay bound to the version they accepted — changing the current version never rewrites past consents." data-zh="原型:上线时由存储的各版本正文实时生成 diff。既有 CONSENT_LOG 记录仍绑定其当时接受的版本——切换现行版本不会改写历史同意。">Prototype: the live diff renders from stored version texts on launch. Existing <code>CONSENT_LOG</code> rows stay bound to the version they accepted.</div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="closeModal('m-versionDiff')" data-en="Close" data-zh="关闭">Close</button>
+        <button class="btn pri" onclick="closeModal('m-versionDiff')" data-en="Download v2.1" data-zh="下载 v2.1">Download v2.1</button>
       </div>
     </div>
   </div>
